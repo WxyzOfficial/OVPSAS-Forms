@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OSAS Spreadsheet — OVPSAS Forms</title>
+<link rel="icon" href="https://wxyzofficial.sirv.com/SSU/ssu.png">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+:root{
+  --light-blue:#DCEEFF; --primary:#4A90E2; --dark-blue:#173B63;
+  --accent:#FFD54F; --soft-yellow:#FFF4BF; --white:#FFFFFF;
+  --bg:#F5F9FE; --text:#243447; --text2:#64748B;
+  --border:#DCE5EF; --success:#198754; --error:#DC3545;
+  --shadow:0 4px 16px rgba(23,59,99,.08);
+  --shadow-lg:0 12px 32px rgba(23,59,99,.12);
+  --row-h:40px; --row-h-compact:30px; --head-h:60px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);height:100vh;overflow:hidden;-webkit-font-smoothing:antialiased}
+a{text-decoration:none;color:inherit}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+input{font-family:inherit}
+
+.app{display:flex;flex-direction:column;height:100vh}
+
+/* Header */
+.header{background:#fff;border-bottom:1px solid var(--border);padding:12px 20px;display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;z-index:20}
+.header .left{display:flex;align-items:center;gap:14px;min-width:0;flex:1}
+.header .logo{width:40px;height:40px;border-radius:50%;border:2px solid var(--light-blue);flex-shrink:0}
+.header .meta{min-width:0}
+.header .breadcrumb{font-size:.72rem;color:var(--text2);margin-bottom:2px}
+.header .breadcrumb a{color:var(--primary)}
+.header .breadcrumb i{font-size:.6rem;margin:0 4px;color:var(--border)}
+.header h1{font-size:1.1rem;font-weight:700;color:var(--dark-blue);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:420px}
+.header .stats{font-size:.75rem;color:var(--text2);margin-top:2px;display:flex;gap:14px;flex-wrap:wrap}
+.header .stats b{color:var(--primary)}
+.header .right{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border-radius:8px;font-weight:600;font-size:.82rem;transition:.2s;white-space:nowrap}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover{background:#3a7bc8;transform:translateY(-1px)}
+.btn-accent{background:var(--accent);color:var(--dark-blue)}
+.btn-accent:hover{background:#ffc91f}
+.btn-ghost{background:#fff;border:1px solid var(--border);color:var(--dark-blue)}
+.btn-ghost:hover{border-color:var(--primary);color:var(--primary)}
+.btn-danger{background:var(--error);color:#fff}
+.icon-btn{width:32px;height:32px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;color:var(--text2);transition:.2s}
+.icon-btn:hover{background:var(--light-blue);color:var(--primary)}
+
+/* Toolbar */
+.toolbar{background:#fff;border-bottom:1px solid var(--border);padding:10px 20px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;z-index:15}
+.toolbar .search{position:relative;flex:1;min-width:200px;max-width:340px}
+.toolbar .search i{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--text2);font-size:.82rem}
+.toolbar .search input{width:100%;padding:9px 12px 9px 34px;border:1.5px solid var(--border);border-radius:8px;font-size:.85rem;outline:none;transition:.2s;background:var(--bg)}
+.toolbar .search input:focus{border-color:var(--primary);background:#fff;box-shadow:0 0 0 3px rgba(74,144,226,.12)}
+.toolbar select{padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:.82rem;outline:none;background:#fff;color:var(--text);cursor:pointer;transition:.2s}
+.toolbar select:focus{border-color:var(--primary)}
+.toolbar .divider{width:1px;height:24px;background:var(--border)}
+.toolbar .spacer{flex:1}
+
+/* Formula bar */
+.formula-bar{background:#fff;border-bottom:1px solid var(--border);padding:6px 20px;display:flex;align-items:center;gap:10px;font-size:.82rem;z-index:14}
+.formula-bar .cell-ref{min-width:60px;color:var(--primary);font-weight:700;font-family:monospace;background:var(--light-blue);padding:4px 10px;border-radius:6px;text-align:center}
+.formula-bar .val{flex:1;color:var(--text2);padding:4px 0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.formula-bar .val.filled{color:var(--text)}
+
+/* Grid */
+.grid-wrap{flex:1;overflow:auto;background:var(--bg);position:relative}
+.grid{display:inline-block;min-width:100%;background:#fff;font-size:.82rem}
+.grid-row{display:flex;min-height:var(--row-h);border-bottom:1px solid var(--border)}
+.grid-row.header-row{position:sticky;top:0;z-index:10;background:var(--light-blue);min-height:var(--head-h);font-weight:600}
+.grid-row:hover:not(.header-row) .grid-cell{background:#fafcff}
+.grid-cell{display:flex;align-items:center;padding:6px 10px;border-right:1px solid var(--border);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;flex:0 0 auto;transition:background .12s}
+.grid-cell.corner{position:sticky;left:0;top:0;z-index:12;background:var(--light-blue);width:50px;min-width:50px;justify-content:center;font-weight:700;color:var(--dark-blue);border-right:2px solid var(--border);cursor:pointer}
+.grid-cell.row-num{position:sticky;left:0;z-index:8;background:var(--light-blue);width:50px;min-width:50px;justify-content:center;color:var(--dark-blue);font-weight:600;font-size:.78rem;border-right:2px solid var(--border);cursor:pointer}
+.grid-cell.col-letter{justify-content:center;background:var(--light-blue);color:var(--dark-blue);font-size:.78rem;font-weight:700;min-height:22px;border-bottom:1px solid var(--border);cursor:pointer}
+.grid-cell.col-title{background:var(--light-blue);color:var(--dark-blue);font-size:.82rem;font-weight:600;white-space:normal;line-height:1.25;padding:6px 10px;overflow:hidden;display:flex;align-items:center;border-right:1px solid var(--border)}
+.grid-cell.col-title .inner{overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.grid-cell.data-cell{cursor:cell;position:relative}
+.grid-cell.data-cell:hover{background:var(--light-blue)}
+.grid-cell.selected{background:var(--soft-yellow)!important;outline:2px solid var(--primary);outline-offset:-2px;z-index:5}
+.grid-cell.row-selected{background:var(--soft-yellow)!important}
+.grid-cell.frozen-sticky{position:sticky;left:50px;z-index:7;background:#fff}
+.grid-row:hover .grid-cell.frozen-sticky{background:#fafcff}
+
+/* Loading */
+.loading-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;color:var(--text2);gap:14px}
+.spinner-lg{width:40px;height:40px;border:3px solid var(--light-blue);border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty{text-align:center;padding:70px 20px;color:var(--text2)}
+.empty i{font-size:3rem;color:var(--border);display:block;margin-bottom:16px}
+.empty h3{color:var(--dark-blue);font-size:1.15rem;margin-bottom:8px}
+.empty p{font-size:.9rem;margin-bottom:20px}
+
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(23,59,99,.55);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;z-index:200;padding:20px;animation:fadeIn .2s;overflow-y:auto}
+.modal-overlay.show{display:flex}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.modal{background:#fff;border-radius:16px;max-width:640px;width:100%;max-height:88vh;box-shadow:var(--shadow-lg);animation:pop .25s;display:flex;flex-direction:column}
+@keyframes pop{from{transform:scale(.95);opacity:0}to{transform:scale(1);opacity:1}}
+.modal-head{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.modal-head h3{font-size:1.05rem;color:var(--dark-blue);display:flex;align-items:center;gap:10px}
+.modal-head h3 i{color:var(--primary)}
+.modal-body{padding:20px 22px;overflow-y:auto}
+.modal-foot{padding:14px 22px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap}
+.detail-row{display:flex;flex-direction:column;gap:5px;padding:12px 0;border-bottom:1px solid var(--border)}
+.detail-row:last-child{border-bottom:none}
+.detail-row .q{font-size:.82rem;font-weight:600;color:var(--dark-blue)}
+.detail-row .a{font-size:.9rem;color:var(--text);line-height:1.55;word-break:break-word;white-space:pre-wrap}
+.detail-row .a.empty-answer{color:var(--text2);font-style:italic}
+.detail-meta{background:var(--bg);border-radius:10px;padding:14px;margin-bottom:16px;font-size:.85rem;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.detail-meta b{color:var(--dark-blue);display:block;font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px}
+.detail-meta span{color:var(--text2);font-family:monospace;font-size:.82rem;word-break:break-all}
+
+/* Toast */
+.toast-wrap{position:fixed;bottom:24px;right:24px;display:flex;flex-direction:column;gap:10px;z-index:300}
+.toast{background:#fff;border-left:4px solid var(--primary);border-radius:10px;box-shadow:var(--shadow-lg);padding:14px 18px;display:flex;align-items:center;gap:12px;font-size:.9rem;min-width:260px;animation:slideIn .3s}
+.toast.success{border-left-color:var(--success)}
+.toast.error{border-left-color:var(--error)}
+.toast i{font-size:1.05rem}
+.toast.success i{color:var(--success)}
+.toast.error i{color:var(--error)}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* Form selection screen */
+.form-select{max-width:760px;margin:40px auto;padding:0 20px}
+.form-select h2{color:var(--dark-blue);font-size:1.4rem;margin-bottom:8px}
+.form-select p{color:var(--text2);margin-bottom:24px}
+.form-select .list{background:#fff;border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:var(--shadow)}
+.form-select .item{padding:16px 20px;display:flex;justify-content:space-between;align-items:center;gap:12px;border-bottom:1px solid var(--border);cursor:pointer;transition:.2s;flex-wrap:wrap}
+.form-select .item:last-child{border-bottom:none}
+.form-select .item:hover{background:var(--bg)}
+.form-select .item b{color:var(--dark-blue);font-size:.95rem}
+.form-select .item small{color:var(--text2);font-size:.78rem;display:block;margin-top:3px}
+
+/* Compact density */
+.compact{--row-h:var(--row-h-compact)}
+
+@media(max-width:700px){
+  .header h1{max-width:180px;font-size:1rem}
+  .header .stats{display:none}
+  .toolbar{padding:8px 12px}
+  .toolbar .search{max-width:none}
+}
+</style>
+</head>
+<body>
+
+<div class="app" id="app">
+  <!-- Header -->
+  <div class="header">
+    <div class="left">
+      <img class="logo" src="https://wxyzofficial.sirv.com/SSU/ssu.jpg" alt="SSU">
+      <div class="meta">
+        <div class="breadcrumb">
+          <a href="admin.html">Dashboard</a> <i class="fa-solid fa-chevron-right"></i>
+          <a href="admin.html" onclick="event.preventDefault();history.back()">Forms</a> <i class="fa-solid fa-chevron-right"></i>
+          <span id="crumbForm">Spreadsheet</span>
+        </div>
+        <h1 id="formTitle"><i class="fa-solid fa-table"></i> Loading…</h1>
+        <div class="stats">
+          <span><i class="fa-solid fa-inbox"></i> <b id="rowCount">0</b> responses</span>
+          <span><i class="fa-solid fa-clock"></i> <span id="lastUpdated">—</span></span>
+        </div>
+      </div>
+    </div>
+    <div class="right">
+      <button class="btn btn-ghost" onclick="refreshData()"><i class="fa-solid fa-rotate"></i> Refresh</button>
+      <button class="btn btn-accent" onclick="exportCSV()"><i class="fa-solid fa-file-csv"></i> Export CSV</button>
+      <a class="btn btn-primary" href="admin.html"><i class="fa-solid fa-arrow-left"></i> Dashboard</a>
+    </div>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="toolbar" id="toolbar" style="display:none">
+    <div class="search"><i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text" id="searchInput" placeholder="Search responses..."></div>
+    <div class="divider"></div>
+    <button class="btn btn-ghost" id="sortAsc" title="Sort ascending"><i class="fa-solid fa-arrow-up-wide-short"></i> Asc</button>
+    <button class="btn btn-ghost" id="sortDesc" title="Sort descending"><i class="fa-solid fa-arrow-down-wide-short"></i> Desc</button>
+    <select id="sortColumn" title="Sort column"><option value="">Sort by…</option></select>
+    <div class="divider"></div>
+    <select id="filterColumn" title="Filter column"><option value="">Filter by…</option></select>
+    <input type="text" id="filterValue" placeholder="Filter value" style="padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:.82rem;outline:none;width:140px">
+    <button class="btn btn-ghost" id="clearFilters" title="Clear filters"><i class="fa-solid fa-filter-circle-xmark"></i></button>
+    <div class="spacer"></div>
+    <button class="btn btn-ghost" id="densityBtn" title="Toggle row density"><i class="fa-solid fa-bars-staggered"></i> Density</button>
+    <span class="divider"></span>
+    <span style="font-size:.78rem;color:var(--text2)" id="visibleCount"></span>
+  </div>
+
+  <!-- Formula bar -->
+  <div class="formula-bar" id="formulaBar" style="display:none">
+    <div class="cell-ref" id="cellRef">—</div>
+    <div class="val" id="cellVal">Select a cell to view its full value</div>
+  </div>
+
+  <!-- Grid wrap -->
+  <div class="grid-wrap" id="gridWrap">
+    <div class="loading-wrap"><div class="spinner-lg"></div><div>Loading spreadsheet…</div></div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal" id="modalBox">
+    <div class="modal-head"><h3 id="modalTitle"><i class="fa-solid fa-circle-info"></i> <span>Title</span></h3>
+      <button class="icon-btn" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-foot" id="modalFoot"></div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, getDoc, getDocs, collection, query, orderBy, limit, startAfter }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAo5TKy65vg27n9Dkuh_PDnNT2byHndEY0",
+  authDomain: "forms-a9b1c.firebaseapp.com",
+  projectId: "forms-a9b1c",
+  storageBucket: "forms-a9b1c.firebasestorage.app",
+  messagingSenderId: "1076879732619",
+  appId: "1:1076879732619:web:89ba4135332ac30805898e",
+  measurementId: "G-88TF54KBKR"
+};
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const PAGE_SIZE = 200;
+
+let currentUser = null;
+let formData = null;
+let formId = null;
+let allResponses = [];      // current loaded responses
+let filteredResponses = []; // after search/filter
+let lastDoc = null;
+let hasMore = false;
+let compact = false;
+let selectedCell = null;    // {row, col, qid}
+let selectedRowId = null;
+
+const $ = s => document.querySelector(s);
+const $$ = s => document.querySelectorAll(s);
+
+function escapeHtml(s){ const d = document.createElement('div'); d.textContent = s == null ? '' : String(s); return d.innerHTML; }
+
+function toast(msg, type='success'){
+  const el = document.createElement('div');
+  el.className = 'toast ' + type;
+  el.innerHTML = `<i class="fa-solid ${type==='success'?'fa-circle-check':'fa-circle-exclamation'}"></i><span></span>`;
+  el.querySelector('span').textContent = msg;
+  $('#toastWrap').appendChild(el);
+  setTimeout(() => el.remove(), 3500);
+}
+
+function openModal(title, bodyHTML, footHTML){
+  $('#modalTitle').querySelector('span').textContent = title;
+  $('#modalBody').innerHTML = bodyHTML;
+  $('#modalFoot').innerHTML = footHTML || '<button class="btn btn-ghost" onclick="closeModal()">Close</button>';
+  $('#modalOverlay').classList.add('show');
+}
+function closeModal(){ $('#modalOverlay').classList.remove('show'); }
+window.closeModal = closeModal;
+
+function fmtDate(ts){
+  if (!ts) return '—';
+  try { const d = ts.toDate ? ts.toDate() : new Date(ts);
+    return d.toLocaleString('en-PH', { year:'numeric', month:'short', day:'2-digit', hour:'2-digit', minute:'2-digit' }); }
+  catch { return '—'; }
+}
+
+function colLetter(i){
+  let s = '';
+  while (i >= 0){ s = String.fromCharCode(65 + (i % 26)) + s; i = Math.floor(i / 26) - 1; }
+  return s;
+}
+
+/* --- Auth --- */
+const params = new URLSearchParams(location.search);
+formId = params.get('id');
+
+onAuthStateChanged(auth, async (user) => {
+  if (!user || user.isAnonymous){ window.location.href = 'login.html'; return; }
+  try {
+    const snap = await getDoc(doc(db, 'admins', user.uid));
+    if (!snap.exists() || snap.data().active !== true){ await signOut(auth); window.location.href = 'login.html'; return; }
+  } catch { await signOut(auth); window.location.href = 'login.html'; return; }
+  currentUser = user;
+  if (formId) await loadForm();
+  else renderFormSelector();
+});
+
+async function loadForm(){
+  try {
+    const snap = await getDoc(doc(db, 'forms', formId));
+    if (!snap.exists()){
+      $('#gridWrap').innerHTML = `<div class="empty"><i class="fa-solid fa-file-circle-xmark"></i>
+        <h3>Form Not Found</h3><p>The form you are looking for does not exist.</p>
+        <a class="btn btn-primary" href="admin.html"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</a></div>`;
+      return;
+    }
+    formData = { id:snap.id, ...snap.data() };
+    if (formData.ownerUid !== currentUser.uid){
+      $('#gridWrap').innerHTML = `<div class="empty"><i class="fa-solid fa-lock"></i>
+        <h3>Access Denied</h3><p>You do not have permission to view these responses.</p>
+        <a class="btn btn-primary" href="admin.html"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</a></div>`;
+      return;
+    }
+    $('#formTitle').innerHTML = `<i class="fa-solid fa-table" style="color:var(--primary)"></i> ${escapeHtml(formData.title||'Untitled Form')}`;
+    $('#crumbForm').textContent = formData.title || 'Spreadsheet';
+    document.title = `${formData.title || 'Spreadsheet'} — OVPSAS Forms`;
+    $('#toolbar').style.display = 'flex';
+    $('#formulaBar').style.display = 'flex';
+    buildSortFilterOptions();
+    await loadResponses();
+  } catch(e){
+    console.error(e);
+    $('#gridWrap').innerHTML = `<div class="empty"><i class="fa-solid fa-triangle-exclamation"></i>
+      <h3>Connection Error</h3><p>Could not load data. Please refresh.</p>
+      <button class="btn btn-primary" onclick="location.reload()"><i class="fa-solid fa-rotate"></i> Retry</button></div>`;
+  }
+}
+
+function buildSortFilterOptions(){
+  const sortSel = $('#sortColumn');
+  const filterSel = $('#filterColumn');
+  const cols = [
+    { v:'__submittedAt', l:'Submitted At' },
+    { v:'__id', l:'Submission ID' }
+  ];
+  (formData.questions||[]).forEach((q,i) => cols.push({ v:q.id, l:`${colLetter(i+2)} · ${q.title || 'Question'}` }));
+  sortSel.innerHTML = '<option value="">Sort by…</option>' + cols.map(c => `<option value="${c.v}">${escapeHtml(c.l)}</option>`).join('');
+  filterSel.innerHTML = '<option value="">Filter by…</option>' + cols.map(c => `<option value="${c.v}">${escapeHtml(c.l)}</option>`).join('');
+}
+
+/* --- Load responses with pagination --- */
+async function loadResponses(loadMore = false){
+  if (!loadMore){
+    allResponses = []; lastDoc = null;
+    $('#gridWrap').innerHTML = `<div class="loading-wrap"><div class="spinner-lg"></div><div>Loading responses…</div></div>`;
+  }
+  try {
+    const respCol = collection(db, 'forms', formId, 'responses');
+    let q = query(respCol, orderBy('submittedAt', 'desc'), limit(PAGE_SIZE));
+    if (loadMore && lastDoc) q = query(respCol, orderBy('submittedAt','desc'), startAfter(lastDoc), limit(PAGE_SIZE));
+    const snap = await getDocs(q);
+
+    if (snap.empty && !loadMore && allResponses.length === 0){
+      $('#gridWrap').innerHTML = `<div class="empty"><i class="fa-solid fa-inbox"></i>
+        <h3>No responses yet</h3><p>Responses will appear here as respondents submit the form.</p></div>`;
+      $('#rowCount').textContent = '0';
+      return;
+    }
+
+    snap.docs.forEach(d => allResponses.push({ id:d.id, ...d.data() }));
+    lastDoc = snap.docs[snap.docs.length - 1] || null;
+    hasMore = snap.size === PAGE_SIZE;
+
+    applyFilters();
+    $('#lastUpdated').textContent = new Date().toLocaleTimeString('en-PH', {hour:'2-digit',minute:'2-digit'});
+  } catch(e){
+    console.error(e);
+    if (!loadMore){
+      $('#gridWrap').innerHTML = `<div class="empty"><i class="fa-solid fa-triangle-exclamation"></i>
+        <h3>Failed to Load</h3><p>${escapeHtml(e.message)}</p>
+        <button class="btn btn-primary" onclick="refreshData()"><i class="fa-solid fa-rotate"></i> Retry</button></div>`;
+    }
+  }
+}
+
+/* --- Filter / sort / search --- */
+function applyFilters(){
+  const term = ($('#searchInput').value || '').toLowerCase().trim();
+  const filterCol = $('#filterColumn').value;
+  const filterVal = ($('#filterValue').value || '').toLowerCase().trim();
+  const sortCol = $('#sortColumn').value;
+
+  filteredResponses = allResponses.filter(r => {
+    // Search across all values
+    if (term){
+      const hay = [r.id, fmtDate(r.submittedAt), ...Object.values(r.answers || {}).map(v => Array.isArray(v)?v.join(', '):String(v ?? ''))].join(' ').toLowerCase();
+      if (!hay.includes(term)) return false;
+    }
+    // Filter specific column
+    if (filterCol && filterVal){
+      let cellVal;
+      if (filterCol === '__id') cellVal = r.id;
+      else if (filterCol === '__submittedAt') cellVal = fmtDate(r.submittedAt);
+      else cellVal = r.answers?.[filterCol];
+      const s = Array.isArray(cellVal) ? cellVal.join(', ') : String(cellVal ?? '');
+      if (!s.toLowerCase().includes(filterVal)) return false;
+    }
+    return true;
+  });
+
+  // Sorting
+  const sortDir = sortColumnDir;
+  if (sortCol){
+    filteredResponses.sort((a,b) => {
+      let va, vb;
+      if (sortCol === '__id'){ va = a.id; vb = b.id; }
+      else if (sortCol === '__submittedAt'){ va = a.submittedAt?.seconds || 0; vb = b.submittedAt?.seconds || 0; }
+      else { va = a.answers?.[sortCol]; vb = b.answers?.[sortCol]; }
+      if (Array.isArray(va)) va = va.join(', ');
+      if (Array.isArray(vb)) vb = vb.join(', ');
+      if (typeof va === 'number' && typeof vb === 'number') return sortDir * (va - vb);
+      return sortDir * String(va ?? '').localeCompare(String(vb ?? ''));
+    });
+  }
+
+  renderGrid();
+  $('#rowCount').textContent = allResponses.length;
+  $('#visibleCount').textContent = `Showing ${filteredResponses.length} of ${allResponses.length}`;
+}
+
+let sortColumnDir = -1;
+$('#sortAsc').addEventListener('click', () => { sortColumnDir = 1; if(!$('#sortColumn').value) $('#sortColumn').value = '__submittedAt'; applyFilters(); });
+$('#sortDesc').addEventListener('click', () => { sortColumnDir = -1; if(!$('#sortColumn').value) $('#sortColumn').value = '__submittedAt'; applyFilters(); });
+$('#sortColumn').addEventListener('change', applyFilters);
+$('#searchInput').addEventListener('input', debounce(applyFilters, 200));
+$('#filterColumn').addEventListener('change', applyFilters);
+$('#filterValue').addEventListener('input', debounce(applyFilters, 250));
+$('#clearFilters').addEventListener('click', () => {
+  $('#searchInput').value = ''; $('#filterColumn').value = ''; $('#filterValue').value = '';
+  $('#sortColumn').value = ''; applyFilters(); toast('Filters cleared');
+});
+$('#densityBtn').addEventListener('click', () => {
+  compact = !compact;
+  document.body.classList.toggle('compact', compact);
+  toast(compact ? 'Compact view' : 'Comfortable view');
+});
+
+function debounce(fn, ms){ let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
+
+/* --- Grid render --- */
+function renderGrid(){
+  const wrap = $('#gridWrap');
+  const questions = formData.questions || [];
+  const cols = questions.length + 2; // id + timestamp + questions
+
+  if (!filteredResponses.length){
+    wrap.innerHTML = `<div class="empty"><i class="fa-solid fa-magnifying-glass"></i>
+      <h3>No matching responses</h3><p>Try adjusting your search or filters.</p>
+      <button class="btn btn-ghost" onclick="document.getElementById('clearFilters').click()"><i class="fa-solid fa-filter-circle-xmark"></i> Clear Filters</button></div>`;
+    return;
+  }
+
+  const grid = document.createElement('div');
+  grid.className = 'grid';
+
+  // Row 1: Column letters
+  const letterRow = document.createElement('div');
+  letterRow.className = 'grid-row header-row';
+  const corner1 = document.createElement('div');
+  corner1.className = 'grid-cell corner';
+  corner1.innerHTML = '<i class="fa-solid fa-table-cells"></i>';
+  corner1.title = 'Select all';
+  letterRow.appendChild(corner1);
+  for (let i = 0; i < cols; i++){
+    const c = document.createElement('div');
+    c.className = 'grid-cell col-letter';
+    c.style.width = colWidth(i) + 'px';
+    c.style.minWidth = c.style.width;
+    c.textContent = colLetter(i);
+    letterRow.appendChild(c);
+  }
+  grid.appendChild(letterRow);
+
+  // Row 2: Column titles
+  const titleRow = document.createElement('div');
+  titleRow.className = 'grid-row header-row';
+  const corner2 = document.createElement('div');
+  corner2.className = 'grid-cell corner';
+  corner2.textContent = '#';
+  titleRow.appendChild(corner2);
+
+  const titleFor = (i) => {
+    if (i === 0) return 'Submission ID';
+    if (i === 1) return 'Submitted At';
+    return questions[i-2]?.title || `Q${i-1}`;
+  };
+  for (let i = 0; i < cols; i++){
+    const c = document.createElement('div');
+    c.className = 'grid-cell col-title';
+    c.style.width = colWidth(i) + 'px';
+    c.style.minWidth = c.style.width;
+    c.title = titleFor(i);
+    const inner = document.createElement('div');
+    inner.className = 'inner';
+    inner.textContent = titleFor(i);
+    c.appendChild(inner);
+    titleRow.appendChild(c);
+  }
+  grid.appendChild(titleRow);
+
+  // Data rows
+  filteredResponses.forEach((r, ri) => {
+    const row = document.createElement('div');
+    row.className = 'grid-row';
+    row.dataset.rid = r.id;
+
+    const numCell = document.createElement('div');
+    numCell.className = 'grid-cell row-num';
+    numCell.textContent = ri + 2; // row 1-2 are headers
+    numCell.addEventListener('click', () => selectRow(r.id));
+    row.appendChild(numCell);
+
+    // Cell 0: Submission ID
+    row.appendChild(makeDataCell(r.id, r, 0, '__id', r.id));
+    // Cell 1: Submitted At
+    row.appendChild(makeDataCell(fmtDate(r.submittedAt), r, 1, '__submittedAt', fmtDate(r.submittedAt)));
+    // Question cells
+    questions.forEach((q, qi) => {
+      const val = formatAnswer(r.answers?.[q.id], q);
+      row.appendChild(makeDataCell(val, r, qi + 2, q.id, val));
+    });
+
+    grid.appendChild(row);
+  });
+
+  // Load more
+  if (hasMore){
+    const moreRow = document.createElement('div');
+    moreRow.className = 'grid-row';
+    moreRow.style.justifyContent = 'center';
+    moreRow.innerHTML = `<button class="btn btn-ghost" style="margin:14px"><i class="fa-solid fa-plus"></i> Load more</button>`;
+    moreRow.querySelector('button').addEventListener('click', () => loadResponses(true));
+    grid.appendChild(moreRow);
+  }
+
+  wrap.innerHTML = '';
+  wrap.appendChild(grid);
+}
+
+function colWidth(i){
+  if (i === 0) return 130;
+  if (i === 1) return 170;
+  return 200;
+}
+
+function formatAnswer(v, q){
+  if (v === null || v === undefined || v === '') return '';
+  if (Array.isArray(v)) return v.join(', ');
+  return String(v);
+}
+
+function makeDataCell(text, response, colIndex, qid, rawVal){
+  const c = document.createElement('div');
+  c.className = 'grid-cell data-cell';
+  c.style.width = colWidth(colIndex) + 'px';
+  c.style.minWidth = c.style.width;
+  c.dataset.rid = response.id;
+  c.dataset.qid = qid;
+  c.dataset.col = colIndex;
+  const display = text === '' ? '' : text;
+  c.textContent = display || '—';
+  if (display === '') c.style.color = 'var(--text2)';
+  c.title = display || '(empty)';
+
+  c.addEventListener('click', (e) => {
+    e.stopPropagation();
+    selectCell(c, response, colIndex, qid, rawVal);
+  });
+  c.addEventListener('dblclick', () => openResponseDetail(response));
+  return c;
+}
+
+function selectCell(cellEl, response, colIndex, qid, val){
+  $$('.grid-cell.selected').forEach(el => el.classList.remove('selected'));
+  cellEl.classList.add('selected');
+  selectedCell = { row: response.id, col: colIndex, qid, val, response };
+  $('#cellRef').textContent = colLetter(colIndex) + (filteredResponses.findIndex(r => r.id === response.id) + 2);
+  const v = $('#cellVal');
+  v.textContent = val || '(empty)';
+  v.classList.toggle('filled', !!val);
+}
+
+function selectRow(rid){
+  $$('.grid-cell.row-selected').forEach(el => el.classList.remove('row-selected'));
+  $$('.grid-row').forEach(row => { if (row.dataset.rid === rid) row.querySelectorAll('.grid-cell').forEach(c => c.classList.add('row-selected')); });
+  selectedRowId = rid;
+  const r = filteredResponses.find(x => x.id === rid);
+  if (r) openResponseDetail(r);
+}
+
+/* --- Response detail modal --- */
+function openResponseDetail(r){
+  const questions = formData.questions || [];
+  const rows = questions.map(q => {
+    const v = formatAnswer(r.answers?.[q.id], q);
+    return `<div class="detail-row">
+      <div class="q">${escapeHtml(q.title || 'Question')}${q.required?' <span style="color:var(--error)">*</span>':''}</div>
+      <div class="a ${v?'':'empty-answer'}">${v?escapeHtml(v):'(no answer)'}</div>
+    </div>`;
+  }).join('');
+
+  openModal('Response Details',
+    `<div class="detail-meta">
+      <div><b>Submission ID</b><span>${escapeHtml(r.id)}</span></div>
+      <div><b>Submitted At</b><span>${escapeHtml(fmtDate(r.submittedAt))}</span></div>
+      <div><b>Respondent UID</b><span>${escapeHtml(r.respondentUid || '—')}</span></div>
+      <div><b>Sync Status</b><span style="color:var(--success)"><i class="fa-solid fa-circle-check"></i> ${escapeHtml(r.syncStatus || 'synced')}</span></div>
+    </div>
+    ${rows}`,
+    `<button class="btn btn-ghost" onclick="closeModal()">Close</button>`
+  );
+}
+window.openResponseDetail = (rid) => {
+  const r = filteredResponses.find(x => x.id === rid);
+  if (r) openResponseDetail(r);
+};
+
+/* --- Refresh --- */
+async function refreshData(){
+  await loadResponses(false);
+  toast('Data refreshed');
+}
+window.refreshData = refreshData;
+
+/* --- Export CSV --- */
+function exportCSV(){
+  if (!filteredResponses.length){ toast('Nothing to export', 'error'); return; }
+  const questions = formData.questions || [];
+
+  const headers = ['Submission ID', 'Submitted At', ...questions.map(q => q.title || 'Question')];
+  const rows = filteredResponses.map(r => {
+    const arr = [r.id, fmtDate(r.submittedAt)];
+    questions.forEach(q => {
+      const v = formatAnswer(r.answers?.[q.id], q);
+      arr.push(v);
+    });
+    return arr;
+  });
+
+  const csvEscape = (v) => {
+    const s = v == null ? '' : String(v);
+    if (/[",\n\r]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+    return s;
+  };
+
+  const csv = [headers, ...rows].map(row => row.map(csvEscape).join(',')).join('\r\n');
+  const blob = new Blob(['\ufeff' + csv], { type:'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const safeTitle = (formData.title || 'responses').replace(/[^a-z0-9]+/gi, '_').toLowerCase();
+  const stamp = new Date().toISOString().slice(0,10);
+  a.href = url;
+  a.download = `${safeTitle}_responses_${stamp}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast(`Exported ${filteredResponses.length} responses`, 'success');
+}
+window.exportCSV = exportCSV;
+
+/* --- Form selector (no form id in URL) --- */
+async function renderFormSelector(){
+  $('#toolbar').style.display = 'none';
+  $('#formulaBar').style.display = 'none';
+  const wrap = $('#gridWrap');
+  wrap.innerHTML = `<div class="loading-wrap"><div class="spinner-lg"></div><div>Loading forms…</div></div>`;
+  try {
+    const q = query(collection(db, 'forms'), where('ownerUid','==',currentUser.uid));
+    const snap = await getDocs(q);
+    const forms = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+    if (!forms.length){
+      wrap.innerHTML = `<div class="empty"><i class="fa-solid fa-file-circle-plus"></i>
+        <h3>No forms yet</h3><p>Create a form to start collecting responses.</p>
+        <a class="btn btn-primary" href="admin.html"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</a></div>`;
+      return;
+    }
+    wrap.innerHTML = `<div class="form-select">
+      <h2>Choose a Form</h2>
+      <p>Select a form to open its response spreadsheet.</p>
+      <div class="list">
+        ${forms.map(f => `<div class="item" onclick="location.href='sheets.html?id=${encodeURIComponent(f.id)}'">
+          <div><b>${escapeHtml(f.title||'Untitled')}</b>
+            <small><i class="fa-solid fa-inbox"></i> ${f.responseCount||0} responses · ${f.status==='published'?'Published':'Draft'}</small></div>
+          <i class="fa-solid fa-arrow-right" style="color:var(--primary)"></i>
+        </div>`).join('')}
+      </div>
+    </div>`;
+  } catch(e){
+    wrap.innerHTML = `<div class="empty"><i class="fa-solid fa-triangle-exclamation"></i>
+      <h3>Failed to Load Forms</h3><p>${escapeHtml(e.message)}</p>
+      <button class="btn btn-primary" onclick="location.reload()">Retry</button></div>`;
+  }
+}
+
+/* --- Keyboard: Escape closes modal --- */
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+});
+$('#modalOverlay').addEventListener('click', e => { if (e.target === $('#modalOverlay')) closeModal(); });
+
+/* Import `where` needed above */
+import { where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+</script>
+</body>
+</html>
