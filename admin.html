@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dashboard — OVPSAS Forms</title>
-<link rel="icon" href="https://wxyzofficial.sirv.com/SSU/ssu.jpg">
+<link rel="icon" href="https://wxyzofficial.sirv.com/SSU/ssu.png">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
@@ -1681,11 +1681,44 @@ window.editQuestion = editQuestion;
 
 /* ---------- Save Form ---------- */
 async function saveForm(publish){
-  const titleHtml = fTitleEditor?.getHtml() || '';
-  const descHtml = fDescEditor?.getHtml() || '';
-  const titleText = htmlToText(titleHtml);
-  const descText = htmlToText(descHtml);
+  // --- Self-heal: currentForm may be null if the user reached this page
+  //     via the sidebar "Create Form" button without clicking "New Form".
+  if (!currentForm){
+    currentForm = {
+      title: '', titleHtml: '',
+      description: '', descriptionHtml: '',
+      settings: defaultSettings()
+    };
+  }
+  if (!currentForm.settings){
+    currentForm.settings = defaultSettings();
+  }
 
+  // --- Self-heal: currentSections may be empty for the same reason.
+  if (!Array.isArray(currentSections) || !currentSections.length){
+    currentSections = [ newSection('Section 1') ];
+    activeSectionId = currentSections[0].id;
+    renderSections();
+  }
+
+  // --- Self-heal: the rich text editors may not be initialized yet.
+  if (!fTitleEditor || !fDescEditor){
+    initTopEditors();
+  }
+
+  // --- Self-heal: auth may not have resolved yet (unlikely, but safe).
+  if (!currentUser || !currentUser.uid){
+    toast('Your session is not ready. Please wait a moment and try again.', 'error');
+    return;
+  }
+
+  // --- Read the current title/description from the rich text editors.
+  const titleHtml = fTitleEditor?.getHtml() || '';
+  const descHtml  = fDescEditor?.getHtml()  || '';
+  const titleText = htmlToText(titleHtml);
+  const descText  = htmlToText(descHtml);
+
+  // --- Validation.
   if (!titleText){ toast('Please enter a form title', 'error'); return; }
   if (totalQuestions() === 0){ toast('Add at least one question', 'error'); return; }
 
@@ -1704,6 +1737,7 @@ async function saveForm(publish){
     }
   }
 
+  // --- Build the payload.
   const payload = {
     ownerUid: currentUser.uid,
     title: titleText,
@@ -1717,6 +1751,7 @@ async function saveForm(publish){
     updatedAt: serverTimestamp()
   };
 
+  // --- Write to Firestore.
   try {
     if (editingFormId){
       if (publish) payload.publishedAt = serverTimestamp();
