@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>OVPSAS - Forms</title>
-<link rel="icon" href="https://wxyzofficial.sirv.com/SSU/ssu.jpg">
+<link rel="icon" href="https://wxyzofficial.sirv.com/SSU/ssu.png">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
@@ -29,22 +29,56 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .topbar .home-link:hover{background:var(--light-blue);color:var(--dark-blue)}
 main{flex:1;padding:34px 20px 60px}
 .container{max-width:760px;margin:0 auto}
-.form-card{background:#fff;border-radius:20px;box-shadow:var(--shadow-lg);overflow:hidden;border:1px solid var(--border)}
+
+/* Form Card */
+.form-card{background:#fff;border-radius:20px;box-shadow:var(--shadow-lg);overflow:hidden;border:1px solid var(--border);margin-bottom:20px}
 .form-header{padding:34px 36px 26px;border-bottom:1px solid var(--border);position:relative}
 .form-header .accent-bar{position:absolute;top:0;left:0;right:0;height:6px;background:var(--primary)}
-.form-header h1{font-size:1.65rem;font-weight:800;color:var(--dark-blue);letter-spacing:-.02em;margin-bottom:10px}
-.form-header p{font-size:.96rem;color:var(--text2);line-height:1.6}
+.form-header h1{font-size:1.65rem;font-weight:800;color:var(--dark-blue);letter-spacing:-.02em;margin-bottom:10px;line-height:1.3}
+.form-header h1 b, .form-header h1 strong {font-weight:800}
+.form-header h1 i, .form-header h1 em {font-style:italic}
+.form-header h1 u {text-decoration:underline}
+.form-header .desc{font-size:.96rem;color:var(--text2);line-height:1.6}
+.form-header .desc p{margin-bottom:8px}
+.form-header .desc p:last-child{margin-bottom:0}
 .form-header .header-img{margin-top:18px;border-radius:12px;overflow:hidden;max-height:280px}
 .form-header .header-img img{width:100%;height:100%;object-fit:cover;display:block}
+
+/* Progress Bar */
+.progress-wrap{background:#fff;border-radius:20px;box-shadow:var(--shadow);border:1px solid var(--border);padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:14px}
+.progress-bar{flex:1;height:8px;background:var(--border);border-radius:99px;overflow:hidden}
+.progress-fill{height:100%;background:var(--primary);width:0%;transition:width .3s ease}
+.progress-text{font-size:.8rem;font-weight:600;color:var(--text2);white-space:nowrap}
+
+/* Sections */
+.section-block{display:none}
+.section-block.active{display:block;animation:fade .3s}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.section-header{padding:24px 36px 20px;border-bottom:1px solid var(--border);background:linear-gradient(180deg,#f8fbff,#fff)}
+.section-header h2{font-size:1.15rem;font-weight:700;color:var(--dark-blue);margin-bottom:6px;line-height:1.4}
+.section-header h2 b, .section-header h2 strong {font-weight:800}
+.section-header h2 i, .section-header h2 em {font-style:italic}
+.section-header h2 u {text-decoration:underline}
+.section-header .s-desc{font-size:.9rem;color:var(--text2);line-height:1.6}
+.section-header .s-desc p{margin-bottom:6px}
+.section-header .s-desc p:last-child{margin-bottom:0}
 .form-body{padding:24px 36px 34px}
+
+/* Questions */
 .question{padding:22px 0;border-bottom:1px solid var(--border);position:relative}
 .question:last-of-type{border-bottom:none}
 .q-title{font-size:1rem;font-weight:600;color:var(--dark-blue);margin-bottom:5px;line-height:1.5}
+.q-title b, .q-title strong {font-weight:800}
+.q-title i, .q-title em {font-style:italic}
+.q-title u {text-decoration:underline}
 .q-title .req{color:var(--error);margin-left:4px}
-.q-desc{font-size:.85rem;color:var(--text2);margin-bottom:12px}
+.q-desc{font-size:.85rem;color:var(--text2);margin-bottom:12px;line-height:1.5}
+.q-desc p{margin-bottom:6px}
+.q-desc p:last-child{margin-bottom:0}
 .q-error{color:var(--error);font-size:.82rem;margin-top:7px;display:none;align-items:center;gap:6px}
 .q-error.show{display:flex}
 
+/* Inputs */
 input[type=text],input[type=number],input[type=email],input[type=tel],input[type=date],input[type=time],textarea,select{
   width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:.95rem;font-family:inherit;color:var(--text);background:#fff;outline:none;transition:.2s}
 input:focus,textarea:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(74,144,226,.15)}
@@ -60,19 +94,21 @@ textarea{resize:vertical;min-height:100px;line-height:1.5}
 .scale-opt input{display:none}
 .scale-opt:has(input:checked){border-color:var(--primary);background:var(--light-blue);color:var(--primary)}
 
-.submit-wrap{padding:26px 36px 34px;border-top:1px solid var(--border);background:var(--bg)}
-.btn{display:inline-flex;align-items:center;gap:9px;padding:13px 26px;border-radius:10px;font-weight:600;font-size:.95rem;transition:.2s}
+/* Navigation & Submit */
+.nav-wrap{padding:24px 36px;border-top:1px solid var(--border);background:var(--bg);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;padding:12px 24px;border-radius:10px;font-weight:600;font-size:.95rem;transition:.2s}
 .btn-primary{background:var(--primary);color:#fff;box-shadow:0 6px 16px rgba(74,144,226,.3)}
 .btn-primary:hover:not(:disabled){background:#3a7bc8;transform:translateY(-1px)}
 .btn-primary:disabled{opacity:.7;cursor:not-allowed}
 .btn-ghost{background:#fff;border:1px solid var(--border);color:var(--dark-blue)}
 .btn-ghost:hover{border-color:var(--primary);color:var(--primary)}
-.full-btn{width:100%;justify-content:center}
+.full-btn{width:100%}
 .spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:none}
 .loading .spinner{display:block}
 .loading .btn-text{display:none}
 @keyframes spin{to{transform:rotate(360deg)}}
 
+/* Success / Error States */
 .state{background:#fff;border-radius:20px;padding:60px 40px;text-align:center;box-shadow:var(--shadow-lg);border:1px solid var(--border);max-width:520px;margin:0 auto}
 .state .icon{width:80px;height:80px;border-radius:50%;background:var(--light-blue);color:var(--primary);display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto 20px}
 .state.success .icon{background:#e3f5ea;color:var(--success)}
@@ -80,6 +116,7 @@ textarea{resize:vertical;min-height:100px;line-height:1.5}
 .state h2{font-size:1.35rem;color:var(--dark-blue);margin-bottom:10px}
 .state p{color:var(--text2);font-size:.95rem;margin-bottom:22px;line-height:1.6}
 
+/* Toast */
 .toast-wrap{position:fixed;bottom:24px;right:24px;display:flex;flex-direction:column;gap:10px;z-index:300}
 .toast{background:#fff;border-left:4px solid var(--primary);border-radius:10px;box-shadow:var(--shadow-lg);padding:14px 18px;display:flex;align-items:center;gap:12px;font-size:.9rem;min-width:260px;animation:slideIn .3s}
 .toast.success{border-left-color:var(--success)}
@@ -91,9 +128,11 @@ textarea{resize:vertical;min-height:100px;line-height:1.5}
 
 @media(max-width:600px){
   .form-header{padding:26px 22px 20px}
+  .section-header{padding:20px 22px}
   .form-body{padding:18px 22px 24px}
-  .submit-wrap{padding:20px 22px 24px}
+  .nav-wrap{padding:18px 22px}
   .form-header h1{font-size:1.35rem}
+  .nav-wrap .btn{width:100%}
 }
 </style>
 </head>
@@ -101,17 +140,18 @@ textarea{resize:vertical;min-height:100px;line-height:1.5}
 
 <div class="topbar">
   <div class="container">
-    <a href="index.html" class="brand">
+    <a href="users.html" class="brand">
       <img src="https://wxyzofficial.sirv.com/SSU/ssu.jpg" alt="SSU">
       <span>OVPSAS Forms<small>Online Form</small></span>
     </a>
+    <a href="users.html" class="home-link"><i class="fa-solid fa-house"></i> Home</a>
   </div>
 </div>
 
 <main>
   <div class="container" id="mainContainer">
     <div class="state">
-      <div class="icon"><div class="spinner-lg" style="width:34px;height:34px;border:3px solid var(--light-blue);border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite"></div></div>
+      <div class="icon"><div style="width:34px;height:34px;border:3px solid var(--light-blue);border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite"></div></div>
       <h2>Loading form…</h2>
       <p>Please wait while we fetch the form.</p>
     </div>
@@ -145,6 +185,7 @@ const main = $('#mainContainer');
 let formData = null;
 let formId = null;
 let anonUser = null;
+let currentSectionIndex = 0;
 
 function escapeHtml(s){ const d = document.createElement('div'); d.textContent = s == null ? '' : String(s); return d.innerHTML; }
 
@@ -172,7 +213,7 @@ const params = new URLSearchParams(window.location.search);
 formId = params.get('id');
 if (!formId){
   showState('error','fa-triangle-exclamation','No Form Specified','The form link is missing an ID. Please check the URL and try again.',
-    `<a class="btn btn-primary" href="index.html"><i class="fa-solid fa-house"></i> Go to Homepage</a>`);
+    `<a class="btn btn-primary" href="users.html"><i class="fa-solid fa-house"></i> Go to Homepage</a>`);
 }
 
 /* --- Load form after anonymous auth --- */
@@ -190,14 +231,14 @@ async function loadForm(){
     const snap = await getDoc(ref);
     if (!snap.exists()){
       showState('error','fa-file-circle-xmark','Form Not Found','The form you are looking for does not exist or has been removed.',
-        `<a class="btn btn-primary" href="index.html"><i class="fa-solid fa-house"></i> Go to Homepage</a>`);
+        `<a class="btn btn-primary" href="users.html"><i class="fa-solid fa-house"></i> Go to Homepage</a>`);
       return;
     }
     formData = { id:snap.id, ...snap.data() };
 
     if (formData.status !== 'published'){
       showState('error','fa-lock','Form Unavailable','This form is not currently published and cannot accept responses.',
-        `<a class="btn btn-primary" href="index.html"><i class="fa-solid fa-house"></i> Go to Homepage</a>`);
+        `<a class="btn btn-primary" href="users.html"><i class="fa-solid fa-house"></i> Go to Homepage</a>`);
       return;
     }
     const s = formData.settings || {};
@@ -218,128 +259,116 @@ async function loadForm(){
   }
 }
 
+/* Fallback for older forms that used a flat `questions` array */
+function getSections(){
+  if (Array.isArray(formData.sections) && formData.sections.length) {
+    return formData.sections;
+  }
+  return [{ id: 'sec_1', title: 'Form Questions', titleHtml: '', description: '', descriptionHtml: '', questions: formData.questions || [] }];
+}
+
 function renderForm(){
   const s = formData.settings || {};
   const theme = s.themeColor || '#4A90E2';
+  const sections = getSections();
+  const totalSections = sections.length;
+  
   const headerImg = s.headerImage ? `<div class="header-img"><img src="${escapeHtml(s.headerImage)}" alt="Header"></div>` : '';
+  // Use titleHtml and descriptionHtml if available, fallback to plain text
+  const titleHtml = formData.titleHtml || escapeHtml(formData.title||'Untitled Form');
+  const descHtml = formData.descriptionHtml || (formData.description ? escapeHtml(formData.description) : '');
 
-  main.innerHTML = `<div class="form-card">
+  let html = `<div class="form-card">
     <div class="form-header">
       <div class="accent-bar" style="background:${theme}"></div>
-      <h1>${escapeHtml(formData.title||'Untitled Form')}</h1>
-      ${formData.description?`<p>${escapeHtml(formData.description)}</p>`:''}
+      <h1>${titleHtml}</h1>
+      ${descHtml ? `<div class="desc">${descHtml}</div>` : ''}
       ${headerImg}
-    </div>
-    <form id="responseForm" novalidate>
-      <div class="form-body" id="questionsWrap"></div>
-      <div class="submit-wrap">
-        <button type="submit" class="btn btn-primary full-btn" id="submitBtn" style="background:${theme}">
-          <span class="spinner"></span>
-          <span class="btn-text"><i class="fa-solid fa-paper-plane"></i> ${escapeHtml(s.submitText||'Submit')}</span>
-        </button>
-      </div>
-    </form>
-  </div>`;
+    </div>`;
 
-  const wrap = $('#questionsWrap');
-  (formData.questions || []).forEach((q,i) => wrap.appendChild(renderQuestion(q, i)));
+  if (totalSections > 1) {
+    html += `<div style="padding:20px 36px 0">
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="progress-text" style="text-align:right;margin-top:6px" id="progressText">Section 1 of ${totalSections}</div>
+    </div>`;
+  }
+
+  html += `<form id="responseForm" novalidate>`;
+
+  sections.forEach((sec, si) => {
+    const isActive = si === 0 ? 'active' : '';
+    const secTitleHtml = sec.titleHtml || escapeHtml(sec.title||'Section '+(si+1));
+    const secDescHtml = sec.descriptionHtml || (sec.description ? escapeHtml(sec.description) : '');
+
+    html += `<div class="section-block ${isActive}" data-section="${si}">`;
+    
+    if (totalSections > 1 || sec.titleHtml || sec.title || secDescHtml) {
+      html += `<div class="section-header">
+        ${totalSections > 1 ? `<div style="font-size:.75rem;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Section ${si+1}</div>` : ''}
+        <h2>${secTitleHtml}</h2>
+        ${secDescHtml ? `<div class="s-desc">${secDescHtml}</div>` : ''}
+      </div>`;
+    }
+
+    html += `<div class="form-body" id="secBody_${si}"></div>`;
+    
+    // Nav buttons for this section
+    html += `<div class="nav-wrap">
+      ${si > 0 ? `<button type="button" class="btn btn-ghost" onclick="prevSection(${si})"><i class="fa-solid fa-arrow-left"></i> Back</button>` : `<div></div>`}
+      ${si < totalSections - 1 
+        ? `<button type="button" class="btn btn-primary" onclick="nextSection(${si})" style="background:${theme}">Next <i class="fa-solid fa-arrow-right"></i></button>`
+        : `<button type="submit" class="btn btn-primary" id="submitBtn" style="background:${theme}">
+             <span class="spinner"></span>
+             <span class="btn-text"><i class="fa-solid fa-paper-plane"></i> ${escapeHtml(s.submitText||'Submit')}</span>
+           </button>`}
+    </div>`;
+
+    html += `</div>`;
+  });
+
+  html += `</form></div>`;
+  main.innerHTML = html;
+
+  // Mount questions
+  sections.forEach((sec, si) => {
+    const body = $(`#secBody_${si}`);
+    (sec.questions || []).forEach((q, qi) => body.appendChild(renderQuestion(q, qi)));
+  });
+
+  updateProgress();
   $('#responseForm').addEventListener('submit', onSubmit);
 }
 
-function renderQuestion(q, i){
-  const div = document.createElement('div');
-  div.className = 'question';
-  div.dataset.qid = q.id;
-  div.dataset.qtype = q.type;
-
-  const req = q.required ? '<span class="req">*</span>' : '';
-  const head = document.createElement('div');
-  head.innerHTML = `<div class="q-title">${i+1}. ${escapeHtml(q.title||'Untitled')} ${req}</div>
-    ${q.description?`<div class="q-desc">${escapeHtml(q.description)}</div>`:''}`;
-  div.appendChild(head);
-
-  const ctrl = document.createElement('div');
-  ctrl.className = 'q-control';
-  let inputHtml = '';
-
-  switch(q.type){
-    case 'short':
-      inputHtml = `<input type="text" name="${q.id}" ${q.required?'required':''} placeholder="Your answer">`; break;
-    case 'paragraph':
-      inputHtml = `<textarea name="${q.id}" ${q.required?'required':''} placeholder="Your answer"></textarea>`; break;
-    case 'radio':
-      inputHtml = (q.options||[]).map((o,idx) => `<label class="choice">
-        <input type="radio" name="${q.id}" value="${escapeHtml(o)}" ${q.required?'required':''}>
-        <span>${escapeHtml(o)}</span></label>`).join(''); break;
-    case 'checkbox':
-      inputHtml = (q.options||[]).map(o => `<label class="choice">
-        <input type="checkbox" name="${q.id}" value="${escapeHtml(o)}">
-        <span>${escapeHtml(o)}</span></label>`).join(''); break;
-    case 'dropdown':
-      inputHtml = `<select name="${q.id}" ${q.required?'required':''}>
-        <option value="">Select an option</option>
-        ${(q.options||[]).map(o => `<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join('')}</select>`; break;
-    case 'date': inputHtml = `<input type="date" name="${q.id}" ${q.required?'required':''}>`; break;
-    case 'time': inputHtml = `<input type="time" name="${q.id}" ${q.required?'required':''}>`; break;
-    case 'number': inputHtml = `<input type="number" name="${q.id}" ${q.required?'required':''} placeholder="Enter a number">`; break;
-    case 'email': inputHtml = `<input type="email" name="${q.id}" ${q.required?'required':''} placeholder="name@example.com">`; break;
-    case 'phone': inputHtml = `<input type="tel" name="${q.id}" ${q.required?'required':''} placeholder="+63 9xx xxx xxxx">`; break;
-    case 'scale': {
-      const nums = [];
-      for (let n = q.scaleMin||1; n <= (q.scaleMax||5); n++) nums.push(n);
-      inputHtml = `<div class="scale-row">
-        ${q.scaleMinLabel?`<span class="scale-label">${escapeHtml(q.scaleMinLabel)}</span>`:''}
-        ${nums.map(n => `<label class="scale-opt"><input type="radio" name="${q.id}" value="${n}" ${q.required?'required':''}>${n}</label>`).join('')}
-        ${q.scaleMaxLabel?`<span class="scale-label">${escapeHtml(q.scaleMaxLabel)}</span>`:''}
-      </div>`;
-      break;
-    }
-  }
-  ctrl.innerHTML = inputHtml;
-
-  const err = document.createElement('div');
-  err.className = 'q-error';
-  err.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> <span>This field is required.</span>`;
-  div.appendChild(ctrl);
-  div.appendChild(err);
-
-  // clear error on interaction
-  ctrl.querySelectorAll('input,textarea,select').forEach(el => {
-    el.addEventListener('input', () => err.classList.remove('show'));
-    el.addEventListener('change', () => err.classList.remove('show'));
-  });
-  return div;
+function updateProgress(){
+  const sections = getSections();
+  if (sections.length <= 1) return;
+  const fill = $('#progressFill');
+  const text = $('#progressText');
+  if (fill) fill.style.width = `${((currentSectionIndex + 1) / sections.length) * 100}%`;
+  if (text) text.textContent = `Section ${currentSectionIndex + 1} of ${sections.length}`;
 }
 
-/* --- Submit --- */
-let submitting = false;
-async function onSubmit(e){
-  e.preventDefault();
-  if (submitting) return;
-
-  // Validate
+function validateSection(si){
+  const secDiv = document.querySelector(`.section-block[data-section="${si}"]`);
+  const questions = secDiv.querySelectorAll('.question');
   let firstErr = null;
-  const answers = {};
   let hasError = false;
 
-  document.querySelectorAll('.question').forEach(qDiv => {
+  questions.forEach(qDiv => {
     const qid = qDiv.dataset.qid;
     const qtype = qDiv.dataset.qtype;
-    const q = formData.questions.find(x => x.id === qid);
+    const q = findQuestion(qid);
     const err = qDiv.querySelector('.q-error');
     err.classList.remove('show');
-    let val = null;
     let missing = false;
+    let val = null;
 
     if (qtype === 'checkbox'){
-      const checked = [...qDiv.querySelectorAll(`input[type=checkbox][name="${qid}"]:checked`)].map(c => c.value);
-      val = checked;
+      const checked = [...qDiv.querySelectorAll(`input[type=checkbox]:checked`)];
       if (q.required && checked.length === 0) missing = true;
-      else val = checked;
     } else if (qtype === 'radio' || qtype === 'scale'){
-      const sel = qDiv.querySelector(`input[name="${qid}"]:checked`);
-      if (!sel) { if (q.required) missing = true; val = null; }
-      else val = qtype === 'scale' ? Number(sel.value) : sel.value;
+      const sel = qDiv.querySelector(`input[type=radio]:checked`);
+      if (!sel && q.required) missing = true;
     } else {
       const input = qDiv.querySelector('input,textarea,select');
       val = input ? input.value.trim() : '';
@@ -357,18 +386,152 @@ async function onSubmit(e){
       hasError = true;
       err.classList.add('show');
       if (!firstErr) firstErr = qDiv;
-    } else {
-      answers[qid] = val;
     }
   });
 
   if (hasError){
     firstErr.scrollIntoView({behavior:'smooth', block:'center'});
-    toast('Please fix the highlighted fields.', 'error');
-    return;
+    toast('Please fix the highlighted fields before proceeding.', 'error');
+    return false;
   }
+  return true;
+}
 
-  // Ensure anonymous session
+window.nextSection = function(currentSi){
+  if (!validateSection(currentSi)) return;
+  
+  const blocks = document.querySelectorAll('.section-block');
+  blocks[currentSi].classList.remove('active');
+  blocks[currentSi + 1].classList.add('active');
+  currentSectionIndex = currentSi + 1;
+  updateProgress();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+};
+
+window.prevSection = function(currentSi){
+  const blocks = document.querySelectorAll('.section-block');
+  blocks[currentSi].classList.remove('active');
+  blocks[currentSi - 1].classList.add('active');
+  currentSectionIndex = currentSi - 1;
+  updateProgress();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+};
+
+function findQuestion(qid){
+  const sections = getSections();
+  for (const sec of sections) {
+    const q = (sec.questions || []).find(x => x.id === qid);
+    if (q) return q;
+  }
+  return null;
+}
+
+function renderQuestion(q, i){
+  const div = document.createElement('div');
+  div.className = 'question';
+  div.dataset.qid = q.id;
+  div.dataset.qtype = q.type;
+
+  const req = q.required ? '<span class="req">*</span>' : '';
+  const titleHtml = q.titleHtml || escapeHtml(q.title||'Untitled');
+  const descHtml = q.descriptionHtml || (q.description ? escapeHtml(q.description) : '');
+
+  const head = document.createElement('div');
+  head.innerHTML = `<div class="q-title">${i+1}. ${titleHtml} ${req}</div>
+    ${descHtml ? `<div class="q-desc">${descHtml}</div>` : ''}`;
+  div.appendChild(head);
+
+  const ctrl = document.createElement('div');
+  ctrl.className = 'q-control';
+  let inputHtml = '';
+
+  switch(q.type){
+    case 'short': inputHtml = `<input type="text" name="${q.id}" placeholder="Your answer">`; break;
+    case 'paragraph': inputHtml = `<textarea name="${q.id}" placeholder="Your answer"></textarea>`; break;
+    case 'radio':
+      inputHtml = (q.options||[]).map(o => `<label class="choice">
+        <input type="radio" name="${q.id}" value="${escapeHtml(o)}">
+        <span>${escapeHtml(o)}</span></label>`).join(''); break;
+    case 'checkbox':
+      inputHtml = (q.options||[]).map(o => `<label class="choice">
+        <input type="checkbox" name="${q.id}" value="${escapeHtml(o)}">
+        <span>${escapeHtml(o)}</span></label>`).join(''); break;
+    case 'dropdown':
+      inputHtml = `<select name="${q.id}">
+        <option value="">Select an option</option>
+        ${(q.options||[]).map(o => `<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join('')}</select>`; break;
+    case 'date': inputHtml = `<input type="date" name="${q.id}">`; break;
+    case 'time': inputHtml = `<input type="time" name="${q.id}">`; break;
+    case 'number': inputHtml = `<input type="number" name="${q.id}" placeholder="Enter a number">`; break;
+    case 'email': inputHtml = `<input type="email" name="${q.id}" placeholder="name@example.com">`; break;
+    case 'phone': inputHtml = `<input type="tel" name="${q.id}" placeholder="+63 9xx xxx xxxx">`; break;
+    case 'scale': {
+      const nums = [];
+      for (let n = q.scaleMin||1; n <= (q.scaleMax||5); n++) nums.push(n);
+      inputHtml = `<div class="scale-row">
+        ${q.scaleMinLabel?`<span class="scale-label">${escapeHtml(q.scaleMinLabel)}</span>`:''}
+        ${nums.map(n => `<label class="scale-opt"><input type="radio" name="${q.id}" value="${n}">${n}</label>`).join('')}
+        ${q.scaleMaxLabel?`<span class="scale-label">${escapeHtml(q.scaleMaxLabel)}</span>`:''}
+      </div>`;
+      break;
+    }
+  }
+  ctrl.innerHTML = inputHtml;
+
+  const err = document.createElement('div');
+  err.className = 'q-error';
+  err.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> <span>This field is required.</span>`;
+  div.appendChild(ctrl);
+  div.appendChild(err);
+
+  ctrl.querySelectorAll('input,textarea,select').forEach(el => {
+    el.addEventListener('input', () => err.classList.remove('show'));
+    el.addEventListener('change', () => err.classList.remove('show'));
+  });
+  return div;
+}
+
+/* --- Submit --- */
+let submitting = false;
+async function onSubmit(e){
+  e.preventDefault();
+  if (submitting) return;
+
+  const sections = getSections();
+  // Validate all sections one last time
+  let allValid = true;
+  for (let i = 0; i < sections.length; i++) {
+    if (!validateSection(i)) {
+      allValid = false;
+      // Jump to the first section with an error
+      const blocks = document.querySelectorAll('.section-block');
+      blocks.forEach(b => b.classList.remove('active'));
+      blocks[i].classList.add('active');
+      currentSectionIndex = i;
+      updateProgress();
+      break;
+    }
+  }
+  if (!allValid) return;
+
+  const answers = {};
+  document.querySelectorAll('.question').forEach(qDiv => {
+    const qid = qDiv.dataset.qid;
+    const qtype = qDiv.dataset.qtype;
+    let val = null;
+
+    if (qtype === 'checkbox'){
+      val = [...qDiv.querySelectorAll(`input[type=checkbox]:checked`)].map(c => c.value);
+    } else if (qtype === 'radio' || qtype === 'scale'){
+      const sel = qDiv.querySelector(`input[type=radio]:checked`);
+      if (sel) val = qtype === 'scale' ? Number(sel.value) : sel.value;
+    } else {
+      const input = qDiv.querySelector('input,textarea,select');
+      val = input ? input.value.trim() : '';
+    }
+    answers[qid] = val;
+  });
+
   if (!auth.currentUser){
     try { await signInAnonymously(auth); }
     catch { toast('Session error. Please refresh.', 'error'); return; }
@@ -380,7 +543,6 @@ async function onSubmit(e){
   btn.disabled = true;
 
   try {
-    // Re-verify form is still open
     const fresh = await getDoc(doc(db, 'forms', formId));
     if (!fresh.exists() || fresh.data().status !== 'published' || fresh.data().settings?.acceptingResponses === false){
       toast('This form is no longer accepting responses.', 'error');
@@ -388,7 +550,6 @@ async function onSubmit(e){
       return;
     }
 
-    // Write response
     const respCol = collection(db, 'forms', formId, 'responses');
     await addDoc(respCol, {
       formId,
@@ -398,14 +559,10 @@ async function onSubmit(e){
       syncStatus: 'synced'
     });
 
-    // Increment response count (allowed for authenticated anonymous users by rules)
     try {
-      await updateDoc(doc(db, 'forms', formId), {
-        responseCount: increment(1)
-      });
+      await updateDoc(doc(db, 'forms', formId), { responseCount: increment(1) });
     } catch(e){ console.warn('Count update failed:', e.message); }
 
-    // Success
     const s = formData.settings || {};
     showState('success','fa-circle-check','Response Submitted',
       s.confirmationMessage || 'Thank you! Your response has been recorded.',
