@@ -34,13 +34,22 @@ main{flex:1;padding:34px 20px 60px}
 .form-card{background:#fff;border-radius:20px;box-shadow:var(--shadow-lg);overflow:hidden;border:1px solid var(--border);margin-bottom:20px}
 .form-header{padding:34px 36px 26px;border-bottom:1px solid var(--border);position:relative}
 .form-header .accent-bar{position:absolute;top:0;left:0;right:0;height:6px;background:var(--primary)}
+
+/* Title & Description Paragraph Handling */
 .form-header h1{font-size:1.65rem;font-weight:800;color:var(--dark-blue);letter-spacing:-.02em;margin-bottom:10px;line-height:1.3}
+.form-header h1 p{margin:0 0 6px;}
+.form-header h1 p:last-child{margin-bottom:0;}
 .form-header h1 b, .form-header h1 strong {font-weight:800}
 .form-header h1 i, .form-header h1 em {font-style:italic}
 .form-header h1 u {text-decoration:underline}
+
 .form-header .desc{font-size:.96rem;color:var(--text2);line-height:1.6}
-.form-header .desc p{margin-bottom:8px}
+.form-header .desc p{margin:0 0 8px}
 .form-header .desc p:last-child{margin-bottom:0}
+.form-header .desc b, .form-header .desc strong {font-weight:700; color:var(--dark-blue)}
+.form-header .desc i, .form-header .desc em {font-style:italic}
+.form-header .desc u {text-decoration:underline}
+
 .form-header .header-img{margin-top:18px;border-radius:12px;overflow:hidden;max-height:280px}
 .form-header .header-img img{width:100%;height:100%;object-fit:cover;display:block}
 
@@ -55,26 +64,44 @@ main{flex:1;padding:34px 20px 60px}
 .section-block.active{display:block;animation:fade .3s}
 @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .section-header{padding:24px 36px 20px;border-bottom:1px solid var(--border);background:linear-gradient(180deg,#f8fbff,#fff)}
+
+/* Section Title & Description Paragraph Handling */
 .section-header h2{font-size:1.15rem;font-weight:700;color:var(--dark-blue);margin-bottom:6px;line-height:1.4}
+.section-header h2 p{margin:0 0 6px;}
+.section-header h2 p:last-child{margin-bottom:0;}
 .section-header h2 b, .section-header h2 strong {font-weight:800}
 .section-header h2 i, .section-header h2 em {font-style:italic}
 .section-header h2 u {text-decoration:underline}
+
 .section-header .s-desc{font-size:.9rem;color:var(--text2);line-height:1.6}
-.section-header .s-desc p{margin-bottom:6px}
+.section-header .s-desc p{margin:0 0 6px}
 .section-header .s-desc p:last-child{margin-bottom:0}
+.section-header .s-desc b, .section-header .s-desc strong {font-weight:700; color:var(--dark-blue)}
+.section-header .s-desc i, .section-header .s-desc em {font-style:italic}
+.section-header .s-desc u {text-decoration:underline}
+
 .form-body{padding:24px 36px 34px}
 
 /* Questions */
 .question{padding:22px 0;border-bottom:1px solid var(--border);position:relative}
 .question:last-of-type{border-bottom:none}
+
+/* Question Title & Description Paragraph Handling */
 .q-title{font-size:1rem;font-weight:600;color:var(--dark-blue);margin-bottom:5px;line-height:1.5}
+.q-title p{margin:0 0 4px;}
+.q-title p:last-child{margin-bottom:0;}
 .q-title b, .q-title strong {font-weight:800}
 .q-title i, .q-title em {font-style:italic}
 .q-title u {text-decoration:underline}
 .q-title .req{color:var(--error);margin-left:4px}
+
 .q-desc{font-size:.85rem;color:var(--text2);margin-bottom:12px;line-height:1.5}
-.q-desc p{margin-bottom:6px}
+.q-desc p{margin:0 0 6px}
 .q-desc p:last-child{margin-bottom:0}
+.q-desc b, .q-desc strong {font-weight:700; color:var(--dark-blue)}
+.q-desc i, .q-desc em {font-style:italic}
+.q-desc u {text-decoration:underline}
+
 .q-error{color:var(--error);font-size:.82rem;margin-top:7px;display:none;align-items:center;gap:6px}
 .q-error.show{display:flex}
 
@@ -274,7 +301,8 @@ function renderForm(){
   const totalSections = sections.length;
   
   const headerImg = s.headerImage ? `<div class="header-img"><img src="${escapeHtml(s.headerImage)}" alt="Header"></div>` : '';
-  // Use titleHtml and descriptionHtml if available, fallback to plain text
+  
+  // Use titleHtml and descriptionHtml to preserve paragraphs and rich text
   const titleHtml = formData.titleHtml || escapeHtml(formData.title||'Untitled Form');
   const descHtml = formData.descriptionHtml || (formData.description ? escapeHtml(formData.description) : '');
 
