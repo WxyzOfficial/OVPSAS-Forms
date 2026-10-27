@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dashboard — OVPSAS Forms</title>
-<link rel="icon" href="https://wxyzofficial.sirv.com/SSU/ssu.jpg">
+<link rel="icon" href="https://wxyzofficial.sirv.com/SSU/ssu.png">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
@@ -659,7 +659,6 @@ const firebaseConfig = {
   appId: "1:1076879732619:web:89ba4135332ac30805898e",
   measurementId: "G-88TF54KBKR"
 };
-
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
@@ -1026,7 +1025,14 @@ function switchPage(page){
 window.switchPage = switchPage;
 
 $$('.sidebar nav button[data-page]').forEach(btn => {
-  btn.addEventListener('click', () => switchPage(btn.dataset.page));
+  btn.addEventListener('click', () => {
+    const page = btn.dataset.page;
+    if (page === 'create' && !editingFormId && !currentForm){
+      startNewForm();   // initializes currentForm, currentSections, editors
+      return;
+    }
+    switchPage(page);
+  });
 });
 $('#menuBtn').addEventListener('click', () => {
   $('#sidebar').classList.add('open'); $('#overlaySidebar').classList.add('show');
@@ -1349,7 +1355,8 @@ function addQuestion(type){
     required: false,
     options: (['radio','checkbox','dropdown'].includes(type)) ? ['Option 1','Option 2'] : [],
     scaleMin: 1, scaleMax: 5,
-    scaleMinLabel:'', scaleMaxLabel:''
+    scaleMinLabel:'', scaleMaxLabel:'',
+    branching: {}
   };
   sec.questions.push(q);
   renderSections();
@@ -1599,11 +1606,11 @@ function editQuestion(qid){
   if (!found) return;
   const q = found.question;
   const meta = QUESTION_TYPES.find(t => t.type === q.type);
-  const hasOpts = ['radio','checkbox','dropdown'].includes(q.type);
+  const hasOpts = ['radio','dropdown'].includes(q.type); // Only radio & dropdown support branching in this version
   const isScale = q.type === 'scale';
 
   let optsHtml = '';
-  if (hasOpts){
+  if (['radio','checkbox','dropdown'].includes(q.type)){
     optsHtml = `<div class="field"><label>Options</label><div id="optList">${
       (q.options||[]).map((o,i) => `
         <div class="opt-row">
@@ -1613,6 +1620,7 @@ function editQuestion(qid){
     }</div>
     <button class="btn btn-ghost btn-sm" onclick="addOption()" type="button"><i class="fa-solid fa-plus"></i> Add Option</button></div>`;
   }
+  
   let scaleHtml = '';
   if (isScale){
     scaleHtml = `
@@ -1624,16 +1632,50 @@ function editQuestion(qid){
       </div>`;
   }
 
+  // --- NEW: Conditional Logic Builder ---
+  let branchingHtml = '';
+  if (hasOpts) {
+    // Build section options (excluding the current section)
+    const sectionOpts = currentSections.map((s, i) => {
+      if (s.id === found.section.id) return ''; // can't jump to current section
+      return `<option value="${s.id}">${escapeHtml(s.title || 'Section ' + (i+1))}</option>`;
+    }).join('');
+
+    const branchRules = q.branching || {};
+    const ruleRows = (q.options || []).map(opt => {
+      const target = branchRules[opt] || '';
+      return `<div class="field" style="margin-bottom:8px;display:flex;gap:10px;align-items:center">
+        <span style="font-size:.8rem;width:120px;flex-shrink:0;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escapeHtml(opt)}">If "${escapeHtml(opt)}"</span>
+        <i class="fa-solid fa-arrow-right" style="color:var(--text2);font-size:.75rem"></i>
+        <select class="branch-select" data-opt="${escapeHtml(opt)}" style="flex:1;padding:7px;border:1.5px solid var(--border);border-radius:7px;font-size:.82rem;outline:none">
+          <option value="">Continue to next section</option>
+          ${sectionOpts}
+        </select>
+      </div>`;
+    }).join('');
+
+    branchingHtml = `<div class="field" style="margin-top:16px;background:var(--bg);padding:14px;border-radius:10px;border:1px solid var(--border)">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:12px">
+        <input type="checkbox" id="qEnableBranching" ${Object.keys(branchRules).length ? 'checked' : ''} style="width:16px;height:16px;accent-color:var(--primary)">
+        <span style="font-weight:600;color:var(--dark-blue);font-size:.9rem">Enable Conditional Logic (Branching)</span>
+      </label>
+      <div id="branchRulesWrap" style="display:${Object.keys(branchRules).length ? 'block' : 'none'}">
+        <p style="font-size:.78rem;color:var(--text2);margin-bottom:10px;line-height:1.4">Redirect respondents to a specific section based on their answer.</p>
+        ${ruleRows}
+      </div>
+    </div>`;
+  }
+
   openModal(`Advanced Options · ${meta.label}`,
     `<p style="font-size:.85rem;color:var(--text2);margin-bottom:14px">
       The question title and description are edited directly on the card.
-      Use this dialog for type-specific options and the required toggle.
     </p>
      ${optsHtml}
      ${scaleHtml}
      <div class="field" style="margin-top:6px">
        <label class="switch"><input type="checkbox" id="qReq" ${q.required?'checked':''}><span class="track"></span><span>Required question</span></label>
-     </div>`,
+     </div>
+     ${branchingHtml}`,
     `<button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
      <button class="btn btn-primary" id="qSaveBtn"><i class="fa-solid fa-check"></i> Save</button>`
   );
@@ -1663,9 +1705,30 @@ function editQuestion(qid){
   }
   refreshOptList();
 
+  // Toggle branching visibility
+  const enableBranch = document.getElementById('qEnableBranching');
+  const branchWrap = document.getElementById('branchRulesWrap');
+  if (enableBranch) {
+    enableBranch.addEventListener('change', () => {
+      branchWrap.style.display = enableBranch.checked ? 'block' : 'none';
+    });
+  }
+
   document.getElementById('qSaveBtn').addEventListener('click', () => {
     q.required = document.getElementById('qReq').checked;
-    if (hasOpts) q.options = window.__tempOptions.filter(o => o.trim());
+    if (['radio','checkbox','dropdown'].includes(q.type)) q.options = window.__tempOptions.filter(o => o.trim());
+    
+    // Save branching rules
+    if (hasOpts) {
+      const isEnabled = document.getElementById('qEnableBranching')?.checked;
+      q.branching = {};
+      if (isEnabled) {
+        document.querySelectorAll('.branch-select').forEach(sel => {
+          if (sel.value) q.branching[sel.dataset.opt] = sel.value;
+        });
+      }
+    }
+
     if (isScale){
       q.scaleMin = +document.getElementById('qScaleMin').value || 1;
       q.scaleMax = +document.getElementById('qScaleMax').value || 5;
