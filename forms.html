@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>OVPSAS - Forms</title>
-<link rel="icon" href="https://wxyzofficial.sirv.com/SSU/ssu.png">
+<link rel="icon" href="https://wxyzofficial.sirv.com/SSU/ssu.jpg">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
@@ -373,7 +373,7 @@ function updateProgress(){
   const fill = $('#progressFill');
   const text = $('#progressText');
   if (fill) fill.style.width = `${((currentSectionIndex + 1) / sections.length) * 100}%`;
-  if (text) text.textContent = `Section ${currentSectionIndex + 1} of ${sections.length}`;
+  if (text) text.textContent = `Section ${currentSectionIndex + 1}`;
 }
 
 function validateSection(si){
@@ -428,10 +428,49 @@ function validateSection(si){
 window.nextSection = function(currentSi){
   if (!validateSection(currentSi)) return;
   
+  const sections = getSections();
+  const currentSec = sections[currentSi];
+  let nextSi = currentSi + 1; // Default: go to next section in order
+
+  // Check for branching rules in this section's questions
+  if (currentSec.questions && currentSec.questions.length) {
+    for (const q of currentSec.questions) {
+      if (q.branching && Object.keys(q.branching).length > 0) {
+        // Find what the user answered
+        const qDiv = document.querySelector(`.question[data-qid="${q.id}"]`);
+        if (!qDiv) continue;
+
+        let selectedValue = null;
+        if (q.type === 'radio' || q.type === 'dropdown') {
+          const sel = qDiv.querySelector('input[type="radio"]:checked, select');
+          if (sel) selectedValue = sel.value;
+        }
+
+        // If they selected an option that has a branching target, jump there
+        if (selectedValue && q.branching[selectedValue]) {
+          const targetSectionId = q.branching[selectedValue];
+          const targetIndex = sections.findIndex(s => s.id === targetSectionId);
+          
+          if (targetIndex !== -1) {
+            nextSi = targetIndex;
+            break; // Apply the first matched branch rule and stop checking
+          }
+        }
+      }
+    }
+  }
+
+  // Move to the calculated next section
   const blocks = document.querySelectorAll('.section-block');
   blocks[currentSi].classList.remove('active');
-  blocks[currentSi + 1].classList.add('active');
-  currentSectionIndex = currentSi + 1;
+  
+  // Hide all sections after current to prevent back-button confusion
+  blocks.forEach((b, idx) => {
+    if (idx !== nextSi) b.classList.remove('active');
+  });
+  
+  blocks[nextSi].classList.add('active');
+  currentSectionIndex = nextSi;
   updateProgress();
   window.scrollTo({top: 0, behavior: 'smooth'});
 };
