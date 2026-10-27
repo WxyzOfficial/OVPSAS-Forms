@@ -160,6 +160,9 @@ input,select,textarea{font-family:inherit}
   padding:3px 8px;border-radius:6px;background:var(--light-blue);color:var(--primary);
   display:inline-flex;align-items:center;gap:5px;
 }
+.section-badge.logic {
+  background: #fff4bf; color: #7a5b00;
+}
 .section-body{padding:14px 16px 6px}
 .q-move-select{
   font-size:.74rem;padding:5px 8px;border:1px solid var(--border);
@@ -1390,18 +1393,40 @@ function renderSections(){
     return;
   }
 
+  // Identify target sections for conditional logic
+  const targetSections = {};
+  currentSections.forEach((s) => {
+    s.questions.forEach((q) => {
+      if (q.branching && Object.keys(q.branching).length > 0) {
+        Object.values(q.branching).forEach((targetId) => {
+          if (!targetSections[targetId]) targetSections[targetId] = [];
+          targetSections[targetId].push(q.title || 'Question');
+        });
+      }
+    });
+  });
+
   c.innerHTML = currentSections.map((s, si) => {
     const isActive = s.id === activeSectionId;
+    const isTarget = targetSections[s.id];
+    
+    let targetBadge = '';
+    if (isTarget) {
+      const uniqueSources = [...new Set(targetSections[s.id])];
+      targetBadge = `<span class="section-badge logic" title="Only shown if respondent selects specific answers on: ${escapeHtml(uniqueSources.join(', '))}"><i class="fa-solid fa-code-branch"></i> Conditional Target</span>`;
+    }
+
     const questionsHtml = s.questions.length
       ? s.questions.map((q, qi) => renderQuestionCard(q, qi, si)).join('')
       : '';
     return `<div class="section-block ${isActive?'active-target':''}" data-sid="${s.id}">
       <div class="section-head">
         <div class="section-head-left">
-          <div class="section-num">${si+1}</div>
+          <div class="section-num" ${isTarget ? 'style="background:var(--accent);color:var(--dark-blue)"' : ''}>${si+1}</div>
           <div style="flex:1;min-width:0">
             <div class="s-title-host" data-sid="${s.id}"></div>
             <div class="s-desc-host" data-sid="${s.id}" style="margin-top:4px"></div>
+            ${targetBadge ? `<div style="margin-top:6px">${targetBadge}</div>` : ''}
           </div>
         </div>
         <div class="section-actions">
@@ -1531,12 +1556,16 @@ function renderQuestionCard(q, qi, sectionIndex){
     return `<option value="${s.id}" ${isCurrent?'disabled':''}>${escapeHtml(s.title||'Untitled')}</option>`;
   }).join('');
 
+  const hasBranching = q.branching && Object.keys(q.branching).length > 0;
+  const branchBadge = hasBranching ? `<span class="qtype" style="background:var(--soft-yellow);color:#b8860b"><i class="fa-solid fa-code-branch"></i> Branching</span>` : '';
+
   return `<div class="q-block" data-qid="${q.id}">
     <div class="qh">
       <div style="flex:1;min-width:0">
         <div class="q-title-host"></div>
         <div style="margin-top:4px">
           <span class="qtype"><i class="fa-solid ${meta.icon}"></i> ${meta.label}</span>
+          ${branchBadge}
           <button class="req-toggle ${q.required?'on':''}" data-qid="${q.id}" type="button" title="Toggle required">
             <i class="fa-solid ${q.required?'fa-circle-check':'fa-circle'}"></i>
             ${q.required?'Required':'Optional'}
