@@ -167,11 +167,11 @@ textarea{resize:vertical;min-height:100px;line-height:1.5}
 
 <div class="topbar">
   <div class="container">
-    <a href="users.html" class="brand">
+    <a href="index.html" class="brand">
       <img src="https://wxyzofficial.sirv.com/SSU/ssu.jpg" alt="SSU">
       <span>OVPSAS Forms<small>Online Form</small></span>
     </a>
-    <a href="users.html" class="home-link"><i class="fa-solid fa-house"></i> Home</a>
+    <a href="index.html" class="home-link"><i class="fa-solid fa-house"></i> Home</a>
   </div>
 </div>
 
@@ -240,7 +240,7 @@ const params = new URLSearchParams(window.location.search);
 formId = params.get('id');
 if (!formId){
   showState('error','fa-triangle-exclamation','No Form Specified','The form link is missing an ID. Please check the URL and try again.',
-    `<a class="btn btn-primary" href="users.html"><i class="fa-solid fa-house"></i> Go to Homepage</a>`);
+    `<a class="btn btn-primary" href="index.html"><i class="fa-solid fa-house"></i> Go to Homepage</a>`);
 }
 
 /* --- Load form after anonymous auth --- */
@@ -258,14 +258,14 @@ async function loadForm(){
     const snap = await getDoc(ref);
     if (!snap.exists()){
       showState('error','fa-file-circle-xmark','Form Not Found','The form you are looking for does not exist or has been removed.',
-        `<a class="btn btn-primary" href="users.html"><i class="fa-solid fa-house"></i> Go to Homepage</a>`);
+        `<a class="btn btn-primary" href="index.html"><i class="fa-solid fa-house"></i> Go to Homepage</a>`);
       return;
     }
     formData = { id:snap.id, ...snap.data() };
 
     if (formData.status !== 'published'){
       showState('error','fa-lock','Form Unavailable','This form is not currently published and cannot accept responses.',
-        `<a class="btn btn-primary" href="users.html"><i class="fa-solid fa-house"></i> Go to Homepage</a>`);
+        `<a class="btn btn-primary" href="index.html"><i class="fa-solid fa-house"></i> Go to Homepage</a>`);
       return;
     }
     const s = formData.settings || {};
