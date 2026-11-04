@@ -48,6 +48,7 @@ input{font-family:inherit}
 .btn-ghost:hover{border-color:var(--primary);color:var(--primary)}
 .btn-danger{background:var(--error);color:#fff}
 .btn-danger:hover{background:#b02a37}
+.btn-sm{padding:5px 10px;font-size:.78rem}
 .icon-btn{width:32px;height:32px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;color:var(--text2);transition:.2s}
 .icon-btn:hover{background:var(--light-blue);color:var(--primary)}
 .icon-btn.danger:hover{background:#fde8ea;color:var(--error)}
@@ -202,9 +203,12 @@ select.inline-editor{appearance:none;cursor:pointer}
       </div>
     </div>
     <div class="right">
+      <button class="btn btn-primary" id="loadMoreTopBtn" style="display:none" onclick="loadMoreRows()">
+        <i class="fa-solid fa-arrow-down"></i> Load More
+      </button>
       <button class="btn btn-ghost" onclick="refreshData()"><i class="fa-solid fa-rotate"></i> Refresh</button>
       <button class="btn btn-accent" onclick="exportCSV()"><i class="fa-solid fa-file-csv"></i> Export CSV</button>
-      <a class="btn btn-primary" href="admin.html"><i class="fa-solid fa-arrow-left"></i> Dashboard</a>
+      <a class="btn btn-ghost" href="admin.html"><i class="fa-solid fa-arrow-left"></i> Dashboard</a>
     </div>
   </div>
 
@@ -269,7 +273,7 @@ select.inline-editor{appearance:none;cursor:pointer}
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, getDoc, getDocs, collection, query, orderBy, limit, startAfter, updateDoc, deleteDoc, where }
+import { getFirestore, doc, getDoc, collection, query, orderBy, onSnapshot, updateDoc, deleteDoc, where, increment }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -285,18 +289,18 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-const PAGE_SIZE = 200;
+const RENDER_BATCH = 200; // How many rows to render at a time
 
 let currentUser = null;
 let formData = null;
 let formId = null;
-let allResponses = [];      // current loaded responses
-let filteredResponses = []; // after search/filter
-let lastDoc = null;
-let hasMore = false;
+let allResponses = [];      // All fetched responses (real-time)
+let filteredResponses = []; // After search/filter
+let visibleCount = RENDER_BATCH; // How many currently rendered
 let compact = false;
-let selectedCell = null;    // {row, col, qid}
+let selectedCell = null;
 let selectedRowId = null;
+let unsubscribeSnapshot = null;
 
 const $ = s => document.querySelector(s);
 const $$ = s => document.querySelectorAll(s);
@@ -397,7 +401,9 @@ async function loadForm(){
     $('#toolbar').style.display = 'flex';
     $('#formulaBar').style.display = 'flex';
     buildSortFilterOptions();
-    await loadResponses();
+    
+    // Load real-time data
+    loadResponsesRealtime();
   } catch(e){
     console.error(e);
     $('#gridWrap').innerHTML = `<div class="empty"><i class="fa-solid fa-triangle-exclamation"></i>
@@ -418,40 +424,34 @@ function buildSortFilterOptions(){
   filterSel.innerHTML = '<option value="">Filter by…</option>' + cols.map(c => `<option value="${c.v}">${escapeHtml(c.l)}</option>`).join('');
 }
 
-/* --- Load responses with pagination --- */
-async function loadResponses(loadMore = false){
-  if (!loadMore){
-    allResponses = []; lastDoc = null;
-    $('#gridWrap').innerHTML = `<div class="loading-wrap"><div class="spinner-lg"></div><div>Loading responses…</div></div>`;
-  }
-  try {
-    const respCol = collection(db, 'forms', formId, 'responses');
-    let q = query(respCol, orderBy('submittedAt', 'desc'), limit(PAGE_SIZE));
-    if (loadMore && lastDoc) q = query(respCol, orderBy('submittedAt','desc'), startAfter(lastDoc), limit(PAGE_SIZE));
-    const snap = await getDocs(q);
+/* --- Load responses real-time --- */
+function loadResponsesRealtime(){
+  if (unsubscribeSnapshot) unsubscribeSnapshot();
+  
+  $('#gridWrap').innerHTML = `<div class="loading-wrap"><div class="spinner-lg"></div><div>Connecting to live data…</div></div>`;
+  
+  const respCol = collection(db, 'forms', formId, 'responses');
+  const q = query(respCol, orderBy('submittedAt', 'desc'));
 
-    if (snap.empty && !loadMore && allResponses.length === 0){
-      $('#gridWrap').innerHTML = `<div class="empty"><i class="fa-solid fa-inbox"></i>
-        <h3>No responses yet</h3><p>Responses will appear here as respondents submit the form.</p></div>`;
-      $('#rowCount').textContent = '0';
-      return;
-    }
-
-    snap.docs.forEach(d => allResponses.push({ id:d.id, ...d.data() }));
-    lastDoc = snap.docs[snap.docs.length - 1] || null;
-    hasMore = snap.size === PAGE_SIZE;
-
+  unsubscribeSnapshot = onSnapshot(q, (snap) => {
+    allResponses = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    visibleCount = RENDER_BATCH; // Reset view on data change
     applyFilters();
     $('#lastUpdated').textContent = new Date().toLocaleTimeString('en-PH', {hour:'2-digit',minute:'2-digit'});
-  } catch(e){
-    console.error(e);
-    if (!loadMore){
-      $('#gridWrap').innerHTML = `<div class="empty"><i class="fa-solid fa-triangle-exclamation"></i>
-        <h3>Failed to Load</h3><p>${escapeHtml(e.message)}</p>
-        <button class="btn btn-primary" onclick="refreshData()"><i class="fa-solid fa-rotate"></i> Retry</button></div>`;
-    }
-  }
+  }, (error) => {
+    console.error(error);
+    $('#gridWrap').innerHTML = `<div class="empty"><i class="fa-solid fa-triangle-exclamation"></i>
+      <h3>Failed to Load</h3><p>${escapeHtml(error.message)}</p>
+      <button class="btn btn-primary" onclick="refreshData()"><i class="fa-solid fa-rotate"></i> Retry</button></div>`;
+  });
 }
+
+function refreshData(){
+  visibleCount = RENDER_BATCH;
+  applyFilters();
+  toast('Data refreshed');
+}
+window.refreshData = refreshData;
 
 /* --- Filter / sort / search --- */
 function applyFilters(){
@@ -492,8 +492,23 @@ function applyFilters(){
 
   renderGrid();
   $('#rowCount').textContent = allResponses.length;
-  $('#visibleCount').textContent = `Showing ${filteredResponses.length} of ${allResponses.length}`;
+  $('#visibleCount').textContent = `Showing ${Math.min(visibleCount, filteredResponses.length)} of ${filteredResponses.length}`;
+  
+  // Toggle top Load More button
+  const topBtn = $('#loadMoreTopBtn');
+  if (filteredResponses.length > visibleCount) {
+    topBtn.style.display = 'inline-flex';
+  } else {
+    topBtn.style.display = 'none';
+  }
 }
+
+function loadMoreRows(){
+  visibleCount += RENDER_BATCH;
+  applyFilters();
+  toast(`Showing ${Math.min(visibleCount, filteredResponses.length)} responses`);
+}
+window.loadMoreRows = loadMoreRows;
 
 let sortColumnDir = -1;
 $('#sortAsc').addEventListener('click', () => { sortColumnDir = 1; if(!$('#sortColumn').value) $('#sortColumn').value = '__submittedAt'; applyFilters(); });
@@ -504,7 +519,7 @@ $('#filterColumn').addEventListener('change', applyFilters);
 $('#filterValue').addEventListener('input', debounce(applyFilters, 250));
 $('#clearFilters').addEventListener('click', () => {
   $('#searchInput').value = ''; $('#filterColumn').value = ''; $('#filterValue').value = '';
-  $('#sortColumn').value = ''; applyFilters(); toast('Filters cleared');
+  $('#sortColumn').value = ''; visibleCount = RENDER_BATCH; applyFilters(); toast('Filters cleared');
 });
 $('#densityBtn').addEventListener('click', () => {
   compact = !compact;
@@ -575,8 +590,10 @@ function renderGrid(){
   }
   grid.appendChild(titleRow);
 
-  // Data rows
-  filteredResponses.forEach((r, ri) => {
+  // Data rows (sliced to visibleCount)
+  const toRender = filteredResponses.slice(0, visibleCount);
+  
+  toRender.forEach((r, ri) => {
     const row = document.createElement('div');
     row.className = 'grid-row';
     row.dataset.rid = r.id;
@@ -600,13 +617,12 @@ function renderGrid(){
     grid.appendChild(row);
   });
 
-  // Load more
-  if (hasMore){
+  // Load more at the bottom
+  if (filteredResponses.length > visibleCount){
     const moreRow = document.createElement('div');
     moreRow.className = 'grid-row';
     moreRow.style.justifyContent = 'center';
-    moreRow.innerHTML = `<button class="btn btn-ghost" style="margin:14px"><i class="fa-solid fa-plus"></i> Load more</button>`;
-    moreRow.querySelector('button').addEventListener('click', () => loadResponses(true));
+    moreRow.innerHTML = `<button class="btn btn-ghost" style="margin:14px" onclick="loadMoreRows()"><i class="fa-solid fa-plus"></i> Load ${Math.min(RENDER_BATCH, filteredResponses.length - visibleCount)} more rows</button>`;
     grid.appendChild(moreRow);
   }
 
@@ -699,14 +715,12 @@ function startEditing(cell, response, qid){
     const oldVal = Array.isArray(currentVal) ? currentVal.join(', ') : (currentVal || '');
     if (String(newVal) !== String(oldVal)) {
       try {
-        // Firestore doesn't support field paths with dots easily via updateDoc unless using FieldPath, 
-        // but question IDs are alphanumeric (`q_xxxx`), so dot notation is safe.
         const respRef = doc(db, 'forms', formId, 'responses', response.id);
         await updateDoc(respRef, {
           [`answers.${qid}`]: newVal
         });
         
-        // Update local state
+        // Update local state immediately (onSnapshot will also update it shortly)
         if (!response.answers) response.answers = {};
         response.answers[qid] = newVal;
         
@@ -744,20 +758,7 @@ async function deleteResponse(rid) {
   try {
     await deleteDoc(doc(db, 'forms', formId, 'responses', rid));
     
-    // Remove from local state
-    allResponses = allResponses.filter(r => r.id !== rid);
-    applyFilters();
-    
-    // Optionally update responseCount in form doc (if you want real-time counters)
-    // Requires the form doc to be updated
-    try {
-      const formRef = doc(db, 'forms', formId);
-      const formSnap = await getDoc(formRef);
-      if (formSnap.exists()) {
-         await updateDoc(formRef, { responseCount: increment(-1) });
-      }
-    } catch(_) {}
-
+    // onSnapshot will handle removing the row from the UI
     toast('Response deleted');
   } catch (err) {
     console.error(err);
@@ -810,13 +811,6 @@ window.openResponseDetail = (rid) => {
   const r = filteredResponses.find(x => x.id === rid);
   if (r) openResponseDetail(r);
 };
-
-/* --- Refresh --- */
-async function refreshData(){
-  await loadResponses(false);
-  toast('Data refreshed');
-}
-window.refreshData = refreshData;
 
 /* --- Export CSV --- */
 function exportCSV(){
