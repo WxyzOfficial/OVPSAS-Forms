@@ -47,8 +47,10 @@ input{font-family:inherit}
 .btn-ghost{background:#fff;border:1px solid var(--border);color:var(--dark-blue)}
 .btn-ghost:hover{border-color:var(--primary);color:var(--primary)}
 .btn-danger{background:var(--error);color:#fff}
+.btn-danger:hover{background:#b02a37}
 .icon-btn{width:32px;height:32px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;color:var(--text2);transition:.2s}
 .icon-btn:hover{background:var(--light-blue);color:var(--primary)}
+.icon-btn.danger:hover{background:#fde8ea;color:var(--error)}
 
 /* Toolbar */
 .toolbar{background:#fff;border-bottom:1px solid var(--border);padding:10px 20px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;z-index:15}
@@ -73,9 +75,9 @@ input{font-family:inherit}
 .grid-row{display:flex;min-height:var(--row-h);border-bottom:1px solid var(--border)}
 .grid-row.header-row{position:sticky;top:0;z-index:10;background:var(--light-blue);min-height:var(--head-h);font-weight:600}
 .grid-row:hover:not(.header-row) .grid-cell{background:#fafcff}
-.grid-cell{display:flex;align-items:center;padding:6px 10px;border-right:1px solid var(--border);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;flex:0 0 auto;transition:background .12s}
-.grid-cell.corner{position:sticky;left:0;top:0;z-index:12;background:var(--light-blue);width:50px;min-width:50px;justify-content:center;font-weight:700;color:var(--dark-blue);border-right:2px solid var(--border);cursor:pointer}
-.grid-cell.row-num{position:sticky;left:0;z-index:8;background:var(--light-blue);width:50px;min-width:50px;justify-content:center;color:var(--dark-blue);font-weight:600;font-size:.78rem;border-right:2px solid var(--border);cursor:pointer}
+.grid-cell{display:flex;align-items:center;padding:6px 10px;border-right:1px solid var(--border);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;flex:0 0 auto;transition:background .12s;position:relative}
+.grid-cell.corner{position:sticky;left:0;top:0;z-index:12;background:var(--light-blue);width:80px;min-width:80px;justify-content:center;font-weight:700;color:var(--dark-blue);border-right:2px solid var(--border)}
+.grid-cell.row-num{position:sticky;left:0;z-index:8;background:var(--light-blue);width:80px;min-width:80px;justify-content:center;color:var(--dark-blue);font-weight:600;font-size:.78rem;border-right:2px solid var(--border)}
 .grid-cell.col-letter{justify-content:center;background:var(--light-blue);color:var(--dark-blue);font-size:.78rem;font-weight:700;min-height:22px;border-bottom:1px solid var(--border);cursor:pointer}
 .grid-cell.col-title{background:var(--light-blue);color:var(--dark-blue);font-size:.82rem;font-weight:600;white-space:normal;line-height:1.25;padding:6px 10px;overflow:hidden;display:flex;align-items:center;border-right:1px solid var(--border)}
 .grid-cell.col-title .inner{overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
@@ -83,8 +85,33 @@ input{font-family:inherit}
 .grid-cell.data-cell:hover{background:var(--light-blue)}
 .grid-cell.selected{background:var(--soft-yellow)!important;outline:2px solid var(--primary);outline-offset:-2px;z-index:5}
 .grid-cell.row-selected{background:var(--soft-yellow)!important}
-.grid-cell.frozen-sticky{position:sticky;left:50px;z-index:7;background:#fff}
-.grid-row:hover .grid-cell.frozen-sticky{background:#fafcff}
+
+/* Inline Editor */
+.inline-editor{
+  position:absolute;top:0;left:0;width:100%;height:100%;
+  padding:6px 10px;border:2px solid var(--primary);border-radius:0;font-family:inherit;
+  font-size:.82rem;background:#fff;outline:none;z-index:20;box-shadow:0 4px 12px rgba(0,0,0,.1);
+}
+select.inline-editor{appearance:none;cursor:pointer}
+
+/* Row Actions */
+.row-action-btn {
+  display:none;
+  position:absolute;
+  right:4px;
+  top:50%;
+  transform:translateY(-50%);
+  width:24px;
+  height:24px;
+  border-radius:4px;
+  align-items:center;
+  justify-content:center;
+  color:var(--text2);
+  background:#fff;
+  box-shadow:0 2px 4px rgba(0,0,0,.1);
+}
+.grid-row:hover .row-action-btn { display:flex; }
+.row-action-btn:hover { color:var(--error); background:#fde8ea; }
 
 /* Loading */
 .loading-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;color:var(--text2);gap:14px}
@@ -106,6 +133,13 @@ input{font-family:inherit}
 .modal-head h3 i{color:var(--primary)}
 .modal-body{padding:20px 22px;overflow-y:auto}
 .modal-foot{padding:14px 22px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap}
+.modal.confirm{max-width:420px;text-align:center}
+.modal.confirm .modal-body{padding-top:30px}
+.modal.confirm .m-icon{width:60px;height:60px;border-radius:50%;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;font-size:1.5rem}
+.modal.confirm.danger .m-icon{background:#fde8ea;color:var(--error)}
+.modal.confirm.info .m-icon{background:var(--light-blue);color:var(--primary)}
+.modal.confirm p{color:var(--text2);font-size:.92rem}
+
 .detail-row{display:flex;flex-direction:column;gap:5px;padding:12px 0;border-bottom:1px solid var(--border)}
 .detail-row:last-child{border-bottom:none}
 .detail-row .q{font-size:.82rem;font-weight:600;color:var(--dark-blue)}
@@ -204,7 +238,7 @@ input{font-family:inherit}
   </div>
 </div>
 
-<!-- Modal -->
+<!-- Generic Modal -->
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal" id="modalBox">
     <div class="modal-head"><h3 id="modalTitle"><i class="fa-solid fa-circle-info"></i> <span>Title</span></h3>
@@ -214,13 +248,28 @@ input{font-family:inherit}
   </div>
 </div>
 
+<!-- Confirm Modal -->
+<div class="modal-overlay" id="confirmOverlay">
+  <div class="modal confirm danger" id="confirmBox">
+    <div class="modal-body">
+      <div class="m-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+      <h3 id="confirmTitle" style="color:var(--dark-blue);margin-bottom:8px">Confirm</h3>
+      <p id="confirmMsg">Are you sure?</p>
+    </div>
+    <div class="modal-foot" style="justify-content:center;border-top:none;padding-top:0">
+      <button class="btn btn-ghost" id="confirmCancel">Cancel</button>
+      <button class="btn btn-danger" id="confirmOk">Confirm</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast-wrap" id="toastWrap"></div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, getDoc, getDocs, collection, query, orderBy, limit, startAfter }
+import { getFirestore, doc, getDoc, getDocs, collection, query, orderBy, limit, startAfter, updateDoc, deleteDoc, where }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -271,6 +320,32 @@ function openModal(title, bodyHTML, footHTML){
 }
 function closeModal(){ $('#modalOverlay').classList.remove('show'); }
 window.closeModal = closeModal;
+
+function confirmDialog({title,msg,type='danger',okText='Confirm'}){
+  return new Promise(resolve => {
+    const box = $('#confirmBox');
+    box.className = 'modal confirm ' + type;
+    $('#confirmTitle').textContent = title;
+    $('#confirmMsg').textContent = msg;
+    const ok = $('#confirmOk');
+    ok.className = 'btn ' + (type==='danger'?'btn-danger':'btn-primary');
+    ok.textContent = okText;
+    box.querySelector('.m-icon').innerHTML = type==='danger'
+      ? '<i class="fa-solid fa-triangle-exclamation"></i>'
+      : '<i class="fa-solid fa-circle-info"></i>';
+    $('#confirmOverlay').classList.add('show');
+
+    const cleanup = () => {
+      $('#confirmOverlay').classList.remove('show');
+      ok.removeEventListener('click', onOk);
+      $('#confirmCancel').removeEventListener('click', onCancel);
+    };
+    const onOk = () => { cleanup(); resolve(true); };
+    const onCancel = () => { cleanup(); resolve(false); };
+    ok.addEventListener('click', onOk);
+    $('#confirmCancel').addEventListener('click', onCancel);
+  });
+}
 
 function fmtDate(ts){
   if (!ts) return '—';
@@ -386,12 +461,10 @@ function applyFilters(){
   const sortCol = $('#sortColumn').value;
 
   filteredResponses = allResponses.filter(r => {
-    // Search across all values
     if (term){
       const hay = [r.id, fmtDate(r.submittedAt), ...Object.values(r.answers || {}).map(v => Array.isArray(v)?v.join(', '):String(v ?? ''))].join(' ').toLowerCase();
       if (!hay.includes(term)) return false;
     }
-    // Filter specific column
     if (filterCol && filterVal){
       let cellVal;
       if (filterCol === '__id') cellVal = r.id;
@@ -403,7 +476,6 @@ function applyFilters(){
     return true;
   });
 
-  // Sorting
   const sortDir = sortColumnDir;
   if (sortCol){
     filteredResponses.sort((a,b) => {
@@ -481,7 +553,7 @@ function renderGrid(){
   titleRow.className = 'grid-row header-row';
   const corner2 = document.createElement('div');
   corner2.className = 'grid-cell corner';
-  corner2.textContent = '#';
+  corner2.innerHTML = `<span style="flex:1">#</span>`;
   titleRow.appendChild(corner2);
 
   const titleFor = (i) => {
@@ -511,7 +583,7 @@ function renderGrid(){
 
     const numCell = document.createElement('div');
     numCell.className = 'grid-cell row-num';
-    numCell.textContent = ri + 2; // row 1-2 are headers
+    numCell.innerHTML = `${ri + 2} <button class="row-action-btn" onclick="event.stopPropagation();deleteResponse('${r.id}')" title="Delete Response"><i class="fa-solid fa-trash"></i></button>`;
     numCell.addEventListener('click', () => selectRow(r.id));
     row.appendChild(numCell);
 
@@ -567,13 +639,132 @@ function makeDataCell(text, response, colIndex, qid, rawVal){
   if (display === '') c.style.color = 'var(--text2)';
   c.title = display || '(empty)';
 
+  // Disable editing for system columns (ID, Submitted At)
+  if (qid !== '__id' && qid !== '__submittedAt') {
+    c.addEventListener('dblclick', (e) => {
+      e.stopPropagation();
+      startEditing(c, response, qid);
+    });
+  }
+
   c.addEventListener('click', (e) => {
     e.stopPropagation();
     selectCell(c, response, colIndex, qid, rawVal);
   });
-  c.addEventListener('dblclick', () => openResponseDetail(response));
   return c;
 }
+
+function startEditing(cell, response, qid){
+  if (cell.querySelector('input, select')) return; // already editing
+  
+  const q = formData.questions.find(x => x.id === qid);
+  const currentVal = response.answers?.[qid];
+  const cellText = cell.textContent === '—' ? '' : cell.textContent;
+
+  // Mark selected
+  selectCell(cell, response, cell.dataset.col, qid, cellText);
+
+  let editor;
+  if (q && (q.type === 'radio' || q.type === 'dropdown')) {
+    editor = document.createElement('select');
+    editor.className = 'inline-editor';
+    editor.innerHTML = `<option value="">(empty)</option>` + (q.options||[]).map(o => `<option value="${escapeHtml(o)}" ${o===currentVal?'selected':''}>${escapeHtml(o)}</option>`).join('');
+  } else if (q && q.type === 'checkbox') {
+    // For simplicity, editing checkboxes inline uses a comma-separated text input
+    editor = document.createElement('input');
+    editor.type = 'text';
+    editor.className = 'inline-editor';
+    editor.value = Array.isArray(currentVal) ? currentVal.join(', ') : (currentVal || '');
+    editor.placeholder = 'Comma separated for multiple';
+  } else {
+    editor = document.createElement('input');
+    editor.type = q && q.type === 'number' ? 'number' : 'text';
+    editor.className = 'inline-editor';
+    editor.value = currentVal || '';
+  }
+
+  cell.appendChild(editor);
+  editor.focus();
+
+  let isCancelled = false;
+
+  const save = async () => {
+    if (isCancelled) return;
+    let newVal = editor.value.trim();
+    if (q && q.type === 'checkbox') {
+      newVal = newVal ? newVal.split(',').map(s => s.trim()).filter(Boolean) : [];
+    }
+
+    // Only save if changed
+    const oldVal = Array.isArray(currentVal) ? currentVal.join(', ') : (currentVal || '');
+    if (String(newVal) !== String(oldVal)) {
+      try {
+        // Firestore doesn't support field paths with dots easily via updateDoc unless using FieldPath, 
+        // but question IDs are alphanumeric (`q_xxxx`), so dot notation is safe.
+        const respRef = doc(db, 'forms', formId, 'responses', response.id);
+        await updateDoc(respRef, {
+          [`answers.${qid}`]: newVal
+        });
+        
+        // Update local state
+        if (!response.answers) response.answers = {};
+        response.answers[qid] = newVal;
+        
+        toast('Response updated');
+      } catch (err) {
+        console.error(err);
+        toast('Failed to update: ' + err.message, 'error');
+      }
+    }
+
+    // Remove editor and restore text
+    editor.remove();
+    const disp = q && q.type === 'checkbox' ? (Array.isArray(newVal)?newVal.join(', '):'') : String(newVal || '');
+    cell.textContent = disp || '—';
+    if (!disp) cell.style.color = 'var(--text2)';
+    cell.title = disp || '(empty)';
+  };
+
+  editor.addEventListener('blur', save);
+  editor.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); editor.blur(); }
+    if (e.key === 'Escape') { isCancelled = true; editor.remove(); }
+  });
+}
+
+async function deleteResponse(rid) {
+  const ok = await confirmDialog({
+    title: 'Delete Response?',
+    msg: 'This will permanently delete this submission. This action cannot be undone.',
+    type: 'danger',
+    okText: 'Delete'
+  });
+  if (!ok) return;
+
+  try {
+    await deleteDoc(doc(db, 'forms', formId, 'responses', rid));
+    
+    // Remove from local state
+    allResponses = allResponses.filter(r => r.id !== rid);
+    applyFilters();
+    
+    // Optionally update responseCount in form doc (if you want real-time counters)
+    // Requires the form doc to be updated
+    try {
+      const formRef = doc(db, 'forms', formId);
+      const formSnap = await getDoc(formRef);
+      if (formSnap.exists()) {
+         await updateDoc(formRef, { responseCount: increment(-1) });
+      }
+    } catch(_) {}
+
+    toast('Response deleted');
+  } catch (err) {
+    console.error(err);
+    toast('Failed to delete: ' + err.message, 'error');
+  }
+}
+window.deleteResponse = deleteResponse;
 
 function selectCell(cellEl, response, colIndex, qid, val){
   $$('.grid-cell.selected').forEach(el => el.classList.remove('selected'));
@@ -703,9 +894,6 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape') closeModal();
 });
 $('#modalOverlay').addEventListener('click', e => { if (e.target === $('#modalOverlay')) closeModal(); });
-
-/* Import `where` needed above */
-import { where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 </script>
 </body>
 </html>
