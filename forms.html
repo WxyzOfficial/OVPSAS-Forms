@@ -128,7 +128,8 @@ textarea{resize:vertical;min-height:100px;line-height:1.5}
 .btn-primary:hover:not(:disabled){background:#3a7bc8;transform:translateY(-1px)}
 .btn-primary:disabled{opacity:.7;cursor:not-allowed}
 .btn-ghost{background:#fff;border:1px solid var(--border);color:var(--dark-blue)}
-.btn-ghost:hover{border-color:var(--primary);color:var(--primary)}
+.btn-ghost:hover:not(:disabled){border-color:var(--primary);color:var(--primary)}
+.btn-ghost:disabled{opacity:.5;cursor:not-allowed}
 .full-btn{width:100%}
 .spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:none}
 .loading .spinner{display:block}
@@ -191,8 +192,7 @@ textarea{resize:vertical;min-height:100px;line-height:1.5}
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, signInAnonymously, onAuthStateChanged }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, getDoc, addDoc, collection, serverTimestamp, updateDoc, increment,
-         query, where, getDocs, limit }
+import { getFirestore, doc, getDoc, addDoc, collection, serverTimestamp, updateDoc, increment }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -335,6 +335,9 @@ function renderForm(){
 
   html += `<form id="responseForm" novalidate>`;
 
+  // Render each section WITHOUT its own nav wrap. A single shared nav bar is
+  // rendered at the bottom of the card and driven by JS state so the Back
+  // button always reflects the real navigation history.
   sections.forEach((sec, si) => {
     const isActive = si === startIndex ? 'active' : '';
     const secTitleHtml = sec.titleHtml || escapeHtml(sec.title||'Section '+(si+1));
@@ -350,17 +353,19 @@ function renderForm(){
     }
 
     html += `<div class="form-body" id="secBody_${si}"></div>`;
-    
-    // Nav buttons for this section
-    html += `<div class="nav-wrap">
-      ${navigationHistory.length > 1 ? `<button type="button" class="btn btn-ghost" onclick="prevSection()"><i class="fa-solid fa-arrow-left"></i> Back</button>` : `<div></div>`}
-      <button type="button" class="btn btn-primary" onclick="nextSection(${si})" style="background:${theme}">
-        Next <i class="fa-solid fa-arrow-right"></i>
-      </button>
-    </div>`;
-
     html += `</div>`;
   });
+
+  // Shared navigation bar (Back / Next / Submit)
+  html += `<div class="nav-wrap" id="navWrap">
+    <button type="button" class="btn btn-ghost" id="backBtn" disabled>
+      <i class="fa-solid fa-arrow-left"></i> Back
+    </button>
+    <button type="button" class="btn btn-primary" id="nextBtn" style="background:${theme}">
+      <span class="spinner"></span>
+      <span class="btn-text">Next <i class="fa-solid fa-arrow-right"></i></span>
+    </button>
+  </div>`;
 
   html += `</form></div>`;
   main.innerHTML = html;
@@ -372,6 +377,32 @@ function renderForm(){
   });
 
   $('#responseForm').addEventListener('submit', onSubmit);
+
+  // Wire nav buttons
+  $('#backBtn').addEventListener('click', prevSection);
+  $('#nextBtn').addEventListener('click', () => nextSection(currentSectionIndex));
+
+  updateNavBar();
+}
+
+/* Update Back / Next button labels & disabled states based on current state */
+function updateNavBar(){
+  const backBtn = $('#backBtn');
+  const nextBtn = $('#nextBtn');
+  if (!backBtn || !nextBtn) return;
+
+  const hasPrevious = navigationHistory.length > 1;
+  backBtn.disabled = !hasPrevious;
+  backBtn.style.visibility = hasPrevious ? 'visible' : 'hidden';
+
+  const nextSi = getNextSectionIndex(currentSectionIndex);
+  if (nextSi === -1) {
+    nextBtn.innerHTML = `<span class="spinner"></span>
+      <span class="btn-text">${escapeHtml((formData.settings?.submitLabel) || 'Submit')} <i class="fa-solid fa-paper-plane"></i></span>`;
+  } else {
+    nextBtn.innerHTML = `<span class="spinner"></span>
+      <span class="btn-text">Next <i class="fa-solid fa-arrow-right"></i></span>`;
+  }
 }
 
 function validateSection(si){
@@ -474,7 +505,7 @@ function getNextSectionIndex(currentSi){
   return nextSi;
 }
 
-window.nextSection = function(currentSi){
+function nextSection(currentSi){
   if (!validateSection(currentSi)) return;
   
   const nextSi = getNextSectionIndex(currentSi);
@@ -491,9 +522,13 @@ window.nextSection = function(currentSi){
   
   navigationHistory.push(nextSi);
   currentSectionIndex = nextSi;
-};
 
-window.prevSection = function(){
+  // Scroll the newly revealed section into view
+  blocks[nextSi].scrollIntoView({ behavior: 'smooth', block: 'start' });
+  updateNavBar();
+}
+
+function prevSection(){
   if (navigationHistory.length <= 1) return;
   
   navigationHistory.pop();
@@ -503,7 +538,10 @@ window.prevSection = function(){
   blocks[currentSectionIndex].classList.remove('active');
   blocks[prevSi].classList.add('active');
   currentSectionIndex = prevSi;
-};
+
+  blocks[prevSi].scrollIntoView({ behavior: 'smooth', block: 'start' });
+  updateNavBar();
+}
 
 function findQuestion(qid){
   const sections = getSections();
@@ -579,60 +617,28 @@ function renderQuestion(q, i){
   return div;
 }
 
-/* --- Email uniqueness helpers --- */
-function findEmailQuestionIds(sections){
-  const ids = [];
-  sections.forEach(sec => {
-    (sec.questions || []).forEach(q => {
-      if (q.type === 'email') ids.push(q.id);
-    });
-  });
-  return ids;
-}
-
-async function isEmailAlreadyUsed(formIdValue, emailValue, emailQuestionIds){
-  const respCol = collection(db, 'forms', formIdValue, 'responses');
-  for (const qid of emailQuestionIds){
-    const q = query(respCol, where(`answers.${qid}`, '==', emailValue), limit(1));
-    const snap = await getDocs(q);
-    if (!snap.empty) return true;
-  }
-  return false;
-}
-
-function findQuestionDivAcrossSections(qid){
-  const secDivs = document.querySelectorAll('.section-block');
-  for (const secDiv of secDivs){
-    const qDiv = secDiv.querySelector(`.question[data-qid="${qid}"]`);
-    if (qDiv) return { secDiv, qDiv };
-  }
-  return null;
-}
-
 /* --- Submit --- */
 let submitting = false;
 async function onSubmit(e){
   e.preventDefault();
   if (submitting) return;
 
-  const sections = getSections();
-  
-  // Validate only the sections that are visible in the navigation history
+  // Validate every section that was actually visited
   let allValid = true;
   for (const si of navigationHistory) {
     if (!validateSection(si)) {
       allValid = false;
-      // Jump back to the error section
       document.querySelectorAll('.section-block').forEach(b => b.classList.remove('active'));
-      document.querySelector(`.section-block[data-section="${si}"]`).classList.add('active');
+      const target = document.querySelector(`.section-block[data-section="${si}"]`);
+      target.classList.add('active');
       currentSectionIndex = si;
+      updateNavBar();
       break;
     }
   }
   if (!allValid) return;
 
   const answers = {};
-  // Gather answers from all visible sections
   navigationHistory.forEach(si => {
     const secDiv = document.querySelector(`.section-block[data-section="${si}"]`);
     if (!secDiv) return;
@@ -659,88 +665,21 @@ async function onSubmit(e){
     catch { toast('Session error. Please refresh.', 'error'); return; }
   }
 
-  // ---- Email uniqueness check ----
-  const emailQids = findEmailQuestionIds(sections);
-  const emailsToCheck = [];
-  emailQids.forEach(qid => {
-    const v = answers[qid];
-    if (typeof v === 'string' && v.trim()){
-      emailsToCheck.push({ qid, email: v.trim().toLowerCase() });
-    }
-  });
-
-  // Show a loading toast while checking
-  const checkingToast = document.createElement('div');
-  checkingToast.className = 'toast';
-  checkingToast.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i><span>Verifying email…</span>`;
-  document.getElementById('toastWrap').appendChild(checkingToast);
-
-  try {
-    for (const { qid, email } of emailsToCheck){
-      const used = await isEmailAlreadyUsed(formId, email, emailQids);
-      if (used){
-        checkingToast.remove();
-        toast('This email address has already been used to submit this form.', 'error');
-        // Navigate back to the section containing this email field
-        const found = findQuestionDivAcrossSections(qid);
-        if (found){
-          document.querySelectorAll('.section-block').forEach(b => b.classList.remove('active'));
-          found.secDiv.classList.add('active');
-          // Sync navigation history so Back button works correctly
-          const secIdx = Number(found.secDiv.dataset.section);
-          currentSectionIndex = secIdx;
-          if (navigationHistory[navigationHistory.length - 1] !== secIdx){
-            navigationHistory.push(secIdx);
-          }
-          const input = found.qDiv.querySelector('input,textarea,select');
-          if (input) {
-            // Show the error state on the question itself
-            const qErr = found.qDiv.querySelector('.q-error');
-            if (qErr) {
-              qErr.querySelector('span').textContent = 'This email address has already been used.';
-              qErr.classList.add('show');
-            }
-            input.focus();
-            input.scrollIntoView({behavior:'smooth', block:'center'});
-          }
-        }
-        submitting = false;
-        return;
-      }
-    }
-  } catch(err){
-    console.error('Email check failed:', err);
-    checkingToast.remove();
-    toast('Could not verify email uniqueness. Please try again.', 'error');
-    submitting = false;
-    return;
-  }
-  checkingToast.remove();
-  // ---- End email uniqueness check ----
-
   submitting = true;
-  // Find the active submit button to show loading state
-  const activeSec = document.querySelector('.section-block.active');
-  const btn = activeSec.querySelector('button.btn-primary');
-  if (btn) {
-    btn.classList.add('loading');
-    btn.disabled = true;
+  const nextBtn = $('#nextBtn');
+  if (nextBtn) {
+    nextBtn.classList.add('loading');
+    nextBtn.disabled = true;
   }
 
   try {
     const fresh = await getDoc(doc(db, 'forms', formId));
     if (!fresh.exists() || fresh.data().status !== 'published' || fresh.data().settings?.acceptingResponses === false){
       toast('This form is no longer accepting responses.', 'error');
-      if (btn) { btn.classList.remove('loading'); btn.disabled = false; }
+      if (nextBtn) { nextBtn.classList.remove('loading'); nextBtn.disabled = false; }
       submitting = false;
       return;
     }
-
-    // Normalize emails before saving so future uniqueness checks match
-    emailQids.forEach(qid => {
-      const v = answers[qid];
-      if (typeof v === 'string') answers[qid] = v.trim().toLowerCase();
-    });
 
     const respCol = collection(db, 'forms', formId, 'responses');
     await addDoc(respCol, {
@@ -762,7 +701,7 @@ async function onSubmit(e){
   } catch(e){
     console.error(e);
     toast('Could not submit response: ' + (e.message || 'Unknown error'), 'error');
-    if (btn) { btn.classList.remove('loading'); btn.disabled = false; }
+    if (nextBtn) { nextBtn.classList.remove('loading'); nextBtn.disabled = false; }
     submitting = false;
   }
 }
