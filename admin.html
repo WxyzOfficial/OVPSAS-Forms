@@ -326,6 +326,27 @@ input,select,textarea{font-family:inherit}
 .settings-row-text b{display:block;font-size:.92rem;color:var(--dark-blue);margin-bottom:3px}
 .settings-row-text span{font-size:.82rem;color:var(--text2);line-height:1.5}
 
+/* Statistics */
+.stat-bar-wrap{margin-top:10px}
+.stat-bar-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:.84rem}
+.stat-bar-label{flex:0 0 40%;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text)}
+.stat-bar-track{flex:1;height:10px;background:var(--bg);border-radius:99px;overflow:hidden;border:1px solid var(--border)}
+.stat-bar-fill{height:100%;background:linear-gradient(90deg,var(--primary),#3a7bc8);border-radius:99px;transition:width .4s}
+.stat-bar-val{flex:0 0 auto;font-weight:700;color:var(--dark-blue);font-size:.8rem;min-width:56px;text-align:right}
+.stat-q-block{background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:14px}
+.stat-q-title{font-weight:700;color:var(--dark-blue);font-size:.95rem;margin-bottom:4px}
+.stat-q-meta{font-size:.76rem;color:var(--text2);margin-bottom:10px}
+.stat-q-type{font-size:.7rem;background:var(--light-blue);color:var(--primary);padding:2px 8px;border-radius:6px;font-weight:600;margin-left:6px}
+.stat-text-answers{max-height:220px;overflow-y:auto;display:flex;flex-direction:column;gap:6px}
+.stat-text-answer{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:.84rem;color:var(--text);word-break:break-word}
+.stat-filter-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.stat-filter-row select{flex:1;min-width:140px;padding:9px 12px;border:1.5px solid var(--border);border-radius:9px;font-size:.86rem;outline:none;background:#fff;color:var(--text)}
+.stat-filter-row select:focus{border-color:var(--primary)}
+.stat-filter-result-card{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:16px}
+.stat-filter-result-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.stat-filter-result-count{font-size:1.4rem;font-weight:800;color:var(--primary)}
+.stat-answer-chip{display:inline-block;background:var(--light-blue);color:var(--primary);padding:2px 8px;border-radius:6px;font-size:.78rem;font-weight:600;margin:2px}
+
 /* Responsive */
 .overlay-sidebar{display:none}
 @media(max-width:960px){
@@ -370,6 +391,7 @@ input,select,textarea{font-family:inherit}
       <button data-page="create"><i class="fa-solid fa-circle-plus"></i> Create Form</button>
       <button data-page="responses"><i class="fa-solid fa-inbox"></i> Responses</button>
       <button data-page="sheets"><i class="fa-solid fa-table"></i> Spreadsheet Manager</button>
+      <button data-page="statistics"><i class="fa-solid fa-chart-simple"></i> Statistics</button>
       <button data-page="settings"><i class="fa-solid fa-gear"></i> Settings</button>
       <button id="logoutBtn" style="color:#ffb1b1"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
     </nav>
@@ -504,6 +526,59 @@ input,select,textarea{font-family:inherit}
         <div class="panel">
           <div class="panel-head"><h3><i class="fa-solid fa-table"></i> Open a Form's Spreadsheet</h3></div>
           <div class="panel-body" id="sheetsList"></div>
+        </div>
+      </div>
+
+      <!-- Statistics -->
+      <div class="page" id="page-statistics">
+        <div class="panel">
+          <div class="panel-head">
+            <h3><i class="fa-solid fa-chart-simple"></i> Statistics</h3>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+              <select id="statFormSelect" class="q-move-select" style="max-width:280px;padding:8px 12px;font-size:.86rem"></select>
+              <button class="btn btn-ghost btn-sm" id="statRefreshBtn"><i class="fa-solid fa-rotate"></i> Refresh</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="stats" id="statKpis">
+          <div class="stat"><div class="si"><i class="fa-solid fa-inbox"></i></div>
+            <div><div class="sv" id="stTotal">0</div><div class="sl">Total Responses</div></div></div>
+          <div class="stat"><div class="si"><i class="fa-solid fa-calendar-day"></i></div>
+            <div><div class="sv" id="stToday">0</div><div class="sl">Responses Today</div></div></div>
+          <div class="stat"><div class="si"><i class="fa-solid fa-calendar-week"></i></div>
+            <div><div class="sv" id="stWeek">0</div><div class="sl">Last 7 Days</div></div></div>
+          <div class="stat"><div class="si"><i class="fa-solid fa-percent"></i></div>
+            <div><div class="sv" id="stCompletion">0%</div><div class="sl">Completion Rate</div></div></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h3><i class="fa-solid fa-list-check"></i> Response Breakdown by Question</h3>
+            <span style="font-size:.82rem;color:var(--text2)" id="statQCount">—</span>
+          </div>
+          <div class="panel-body" id="statQuestions">
+            <div class="empty"><i class="fa-solid fa-chart-simple"></i><h3>Select a form</h3><p>Choose a form above to view question-level statistics.</p></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h3><i class="fa-solid fa-filter"></i> Cross-Filter Analysis</h3>
+            <button class="btn btn-ghost btn-sm" id="statClearFilters"><i class="fa-solid fa-xmark"></i> Clear Filters</button>
+          </div>
+          <div class="panel-body">
+            <p style="font-size:.85rem;color:var(--text2);margin-bottom:14px;line-height:1.5">
+              Combine filters across multiple questions to analyze subgroups — e.g. all <b>Male</b> respondents who are also <b>Single Parent</b> students.
+            </p>
+            <div id="statFilterRows" style="display:flex;flex-direction:column;gap:10px"></div>
+            <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
+              <button class="btn btn-primary btn-sm" id="statAddFilter"><i class="fa-solid fa-plus"></i> Add Filter</button>
+              <button class="btn btn-accent btn-sm" id="statApplyFilters"><i class="fa-solid fa-bolt"></i> Apply Filters</button>
+            </div>
+
+            <div id="statFilterResult" style="margin-top:20px"></div>
+          </div>
         </div>
       </div>
 
@@ -668,16 +743,16 @@ const db = getFirestore(app);
 
 /* ---------- State ---------- */
 let currentUser = null;
-let currentAdminDoc = {};       // full /admins/{uid} Firestore document
+let currentAdminDoc = {};
 let forms = [];
 let currentForm = null;
 let editingFormId = null;
-let currentSections = [];       // [{ id, title, titleHtml, description, descriptionHtml, questions:[] }]
+let currentSections = [];
 let activeSectionId = null;
 
 /* ---------- Sign-out / auth guards ---------- */
-let loggingOut = false;         // guards the null that fires DURING signOut
-let authNullTimer = null;       // fires if Firebase never delivers a second callback with a user
+let loggingOut = false;
+let authNullTimer = null;
 
 /* ---------- Question types ---------- */
 const QUESTION_TYPES = [
@@ -703,7 +778,6 @@ function escapeHtml(s){
   const d = document.createElement('div'); d.textContent = s == null ? '' : String(s); return d.innerHTML;
 }
 
-/* Sanitize HTML to allow only formatting tags we support */
 function sanitizeHtml(html){
   if (!html) return '';
   const allowed = ['B','I','U','STRONG','EM','BR','P','DIV'];
@@ -881,18 +955,15 @@ function applyAdminIdentity(){
   const role = docData.role || 'Administrator';
   const initial = (displayName || email || 'A').charAt(0).toUpperCase();
 
-  // Topbar
   const emailEl = $('#userEmail');
   if (emailEl) emailEl.textContent = email;
   const avatarEl = $('#userAvatar');
   if (avatarEl) avatarEl.textContent = initial;
 
-  // Settings profile
   const sName = $('#settingsName');     if (sName) sName.textContent = displayName;
   const sEmail = $('#settingsEmail');   if (sEmail) sEmail.textContent = email;
   const sAvatar = $('#settingsAvatar'); if (sAvatar) sAvatar.textContent = initial;
 
-  // Role pill
   const rolePill = document.querySelector('.settings-role');
   if (rolePill){
     rolePill.innerHTML =
@@ -900,7 +971,6 @@ function applyAdminIdentity(){
       escapeHtml(role) + ' — full access';
   }
 
-  // Keep the settings meta grid in sync
   hydrateAccountInfo();
 }
 
@@ -927,8 +997,6 @@ onAuthStateChanged(auth, async (user) => {
   if (!user) return;
   if (user.isAnonymous) { window.location.replace('login.html'); return; }
 
-  // Verify the admin record. Any failure here shows a retry card
-  // instead of bouncing back to login — so we never loop.
   let snap;
   try {
     snap = await getDoc(doc(db, 'admins', user.uid));
@@ -958,7 +1026,6 @@ onAuthStateChanged(auth, async (user) => {
     return;
   }
 
-  // Success
   authResolved = true;
   if (authNullTimer){ clearTimeout(authNullTimer); authNullTimer = null; }
 
@@ -968,7 +1035,6 @@ onAuthStateChanged(auth, async (user) => {
   loadForms();
 });
 
-/* Show a detailed, retryable error card instead of redirecting. */
 function showAuthError(message, errObj){
   const detail = errObj && errObj.message ? escapeHtml(errObj.message) : '';
   document.body.innerHTML = `
@@ -1008,6 +1074,7 @@ const pageTitles = {
   create: ['Form Builder','Create or edit a form'],
   responses: ['Responses','Choose a form to view submissions'],
   sheets: ['Spreadsheet Manager','Open a form in spreadsheet view'],
+  statistics: ['Statistics','Analyze responses by question and cross-filter'],
   settings: ['Settings','Account and system preferences']
 };
 function switchPage(page){
@@ -1022,6 +1089,7 @@ function switchPage(page){
   if (page === 'forms') renderForms();
   if (page === 'responses') renderResponsesList();
   if (page === 'sheets') renderSheetsList();
+  if (page === 'statistics') loadStatistics();
   if (page === 'settings') hydrateAccountInfo();
   window.scrollTo({top:0,behavior:'smooth'});
 }
@@ -1031,7 +1099,7 @@ $$('.sidebar nav button[data-page]').forEach(btn => {
   btn.addEventListener('click', () => {
     const page = btn.dataset.page;
     if (page === 'create' && !editingFormId && !currentForm){
-      startNewForm();   // initializes currentForm, currentSections, editors
+      startNewForm();
       return;
     }
     switchPage(page);
@@ -1093,6 +1161,7 @@ async function loadForms(){
     renderForms();
     renderResponsesList();
     renderSheetsList();
+    populateStatFormSelect();
   } catch (e) {
     console.error(e);
     toast('Failed to load forms. Check connection.', 'error');
@@ -1393,7 +1462,6 @@ function renderSections(){
     return;
   }
 
-  // Identify target sections for conditional logic
   const targetSections = {};
   currentSections.forEach((s) => {
     s.questions.forEach((q) => {
@@ -1442,7 +1510,6 @@ function renderSections(){
     </div>`;
   }).join('');
 
-  // Mount RTE editors for each section title/description
   c.querySelectorAll('.s-title-host').forEach(host => {
     const sid = host.dataset.sid;
     const sec = currentSections.find(x => x.id === sid);
@@ -1477,7 +1544,6 @@ function renderSections(){
     host.appendChild(ed.el);
   });
 
-  // Mount RTE editors for question titles/descriptions
   c.querySelectorAll('.q-block').forEach(block => {
     const qid = block.dataset.qid;
     const found = findQuestion(qid);
@@ -1512,7 +1578,6 @@ function renderSections(){
     }
   });
 
-  // Required toggle
   c.querySelectorAll('.req-toggle').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.preventDefault();
@@ -1524,7 +1589,6 @@ function renderSections(){
     });
   });
 
-  // Move-to-section dropdowns
   c.querySelectorAll('.q-move-select').forEach(sel => {
     sel.addEventListener('change', (e) => {
       const qid = e.target.dataset.qid;
@@ -1629,13 +1693,13 @@ function deleteQuestion(qid){
 }
 window.deleteQuestion = deleteQuestion;
 
-/* ---------- Question advanced options (modal) ---------- */
+/* ---------- Question advanced options ---------- */
 function editQuestion(qid){
   const found = findQuestion(qid);
   if (!found) return;
   const q = found.question;
   const meta = QUESTION_TYPES.find(t => t.type === q.type);
-  const hasOpts = ['radio','dropdown'].includes(q.type); // Only radio & dropdown support branching in this version
+  const hasOpts = ['radio','dropdown'].includes(q.type);
   const isScale = q.type === 'scale';
 
   let optsHtml = '';
@@ -1661,12 +1725,10 @@ function editQuestion(qid){
       </div>`;
   }
 
-  // --- NEW: Conditional Logic Builder ---
   let branchingHtml = '';
   if (hasOpts) {
-    // Build section options (excluding the current section)
     const sectionOpts = currentSections.map((s, i) => {
-      if (s.id === found.section.id) return ''; // can't jump to current section
+      if (s.id === found.section.id) return '';
       return `<option value="${s.id}">${escapeHtml(s.title || 'Section ' + (i+1))}</option>`;
     }).join('');
 
@@ -1734,7 +1796,6 @@ function editQuestion(qid){
   }
   refreshOptList();
 
-  // Toggle branching visibility
   const enableBranch = document.getElementById('qEnableBranching');
   const branchWrap = document.getElementById('branchRulesWrap');
   if (enableBranch) {
@@ -1747,7 +1808,6 @@ function editQuestion(qid){
     q.required = document.getElementById('qReq').checked;
     if (['radio','checkbox','dropdown'].includes(q.type)) q.options = window.__tempOptions.filter(o => o.trim());
     
-    // Save branching rules
     if (hasOpts) {
       const isEnabled = document.getElementById('qEnableBranching')?.checked;
       q.branching = {};
@@ -1773,8 +1833,6 @@ window.editQuestion = editQuestion;
 
 /* ---------- Save Form ---------- */
 async function saveForm(publish){
-  // --- Self-heal: currentForm may be null if the user reached this page
-  //     via the sidebar "Create Form" button without clicking "New Form".
   if (!currentForm){
     currentForm = {
       title: '', titleHtml: '',
@@ -1786,31 +1844,26 @@ async function saveForm(publish){
     currentForm.settings = defaultSettings();
   }
 
-  // --- Self-heal: currentSections may be empty for the same reason.
   if (!Array.isArray(currentSections) || !currentSections.length){
     currentSections = [ newSection('Section 1') ];
     activeSectionId = currentSections[0].id;
     renderSections();
   }
 
-  // --- Self-heal: the rich text editors may not be initialized yet.
   if (!fTitleEditor || !fDescEditor){
     initTopEditors();
   }
 
-  // --- Self-heal: auth may not have resolved yet (unlikely, but safe).
   if (!currentUser || !currentUser.uid){
     toast('Your session is not ready. Please wait a moment and try again.', 'error');
     return;
   }
 
-  // --- Read the current title/description from the rich text editors.
   const titleHtml = fTitleEditor?.getHtml() || '';
   const descHtml  = fDescEditor?.getHtml()  || '';
   const titleText = htmlToText(titleHtml);
   const descText  = htmlToText(descHtml);
 
-  // --- Validation.
   if (!titleText){ toast('Please enter a form title', 'error'); return; }
   if (totalQuestions() === 0){ toast('Add at least one question', 'error'); return; }
 
@@ -1829,7 +1882,6 @@ async function saveForm(publish){
     }
   }
 
-  // --- Build the payload.
   const payload = {
     ownerUid: currentUser.uid,
     title: titleText,
@@ -1837,13 +1889,12 @@ async function saveForm(publish){
     description: descText,
     descriptionHtml: descHtml,
     sections: currentSections,
-    questions: currentSections.flatMap(s => s.questions), // compat mirror
+    questions: currentSections.flatMap(s => s.questions),
     settings: currentForm.settings,
     status: publish ? 'published' : 'draft',
     updatedAt: serverTimestamp()
   };
 
-  // --- Write to Firestore.
   try {
     if (editingFormId){
       if (publish) payload.publishedAt = serverTimestamp();
@@ -2066,6 +2117,358 @@ function openSheets(id){
 }
 window.openSheets = openSheets;
 
+/* ---------- Statistics ---------- */
+let statCurrentFormId = null;
+let statResponses = [];
+let statFilterDefs = [];
+
+const ANSWERABLE_TYPES = ['radio','checkbox','dropdown','scale','short','paragraph','number','email','phone','date','time'];
+
+function statGetFormQuestions(formId){
+  const f = forms.find(x => x.id === formId);
+  if (!f) return [];
+  if (Array.isArray(f.sections) && f.sections.length){
+    return f.sections.flatMap(s => s.questions || []);
+  }
+  return f.questions || [];
+}
+
+function populateStatFormSelect(){
+  const sel = $('#statFormSelect');
+  if (!sel) return;
+  const prev = sel.value;
+  sel.innerHTML = '<option value="">— Select a form —</option>' +
+    forms.map(f => `<option value="${f.id}">${escapeHtml(f.title||'Untitled')} (${f.responseCount||0})</option>`).join('');
+  if (prev && forms.some(f => f.id === prev)) sel.value = prev;
+  else if (forms.length) sel.value = forms[0].id;
+}
+
+async function loadStatResponses(formId){
+  statResponses = [];
+  if (!formId) return;
+  try {
+    const q = query(collection(db, 'forms', formId, 'responses'), orderBy('submittedAt','desc'), limit(5000));
+    const snap = await getDocs(q);
+    statResponses = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+  } catch (e){
+    console.error('[STAT] Failed to load responses:', e);
+    try {
+      const snap2 = await getDocs(collection(db, 'forms', formId, 'responses'));
+      statResponses = snap2.docs.map(d => ({ id:d.id, ...d.data() }));
+    } catch(e2){ console.error(e2); toast('Could not load responses', 'error'); }
+  }
+}
+
+function statGetAnswer(resp, qid){
+  const answers = resp.answers || resp.responses || {};
+  return answers[qid];
+}
+
+function statAnswerToText(val){
+  if (val == null) return '';
+  if (Array.isArray(val)) return val.join(', ');
+  return String(val);
+}
+
+function statRenderKpis(){
+  const total = statResponses.length;
+  $('#stTotal').textContent = total;
+
+  const now = new Date();
+  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const weekAgo = now.getTime() - 7*24*60*60*1000;
+
+  let today = 0, week = 0;
+  for (const r of statResponses){
+    const ts = r.submittedAt?.toDate ? r.submittedAt.toDate().getTime()
+             : r.submittedAt ? new Date(r.submittedAt).getTime() : 0;
+    if (!ts) continue;
+    if (ts >= startOfDay) today++;
+    if (ts >= weekAgo) week++;
+  }
+  $('#stToday').textContent = today;
+  $('#stWeek').textContent = week;
+
+  const qs = statGetFormQuestions(statCurrentFormId);
+  const requiredQs = qs.filter(q => q.required);
+  let complete = 0;
+  if (total > 0 && requiredQs.length > 0){
+    for (const r of statResponses){
+      let ok = true;
+      for (const q of requiredQs){
+        const v = statGetAnswer(r, q.id);
+        if (v == null || (Array.isArray(v) && !v.length) || String(v).trim() === ''){ ok = false; break; }
+      }
+      if (ok) complete++;
+    }
+  } else if (total > 0){
+    complete = total;
+  }
+  $('#stCompletion').textContent = total ? Math.round((complete/total)*100) + '%' : '0%';
+}
+
+function statRenderQuestions(){
+  const host = $('#statQuestions');
+  const qs = statGetFormQuestions(statCurrentFormId).filter(q => ANSWERABLE_TYPES.includes(q.type));
+  if (!qs.length){
+    host.innerHTML = '<div class="empty"><i class="fa-solid fa-list-check"></i><h3>No questions</h3><p>This form has no answerable questions.</p></div>';
+    return;
+  }
+  $('#statQCount').textContent = qs.length + ' question' + (qs.length===1?'':'s') + ' · ' + statResponses.length + ' responses';
+
+  host.innerHTML = qs.map((q, qi) => {
+    const answers = statResponses.map(r => statGetAnswer(r, q.id)).filter(v =>
+      v != null && !(Array.isArray(v) && !v.length) && String(v).trim() !== ''
+    );
+    const answered = answers.length;
+    const meta = QUESTION_TYPES.find(t => t.type === q.type) || { label:q.type };
+    const typeBadge = `<span class="stat-q-type">${escapeHtml(meta.label)}</span>`;
+
+    let body = '';
+
+    if (['radio','dropdown','scale'].includes(q.type)){
+      const counts = {};
+      for (const a of answers){
+        const key = statAnswerToText(a);
+        counts[key] = (counts[key]||0) + 1;
+      }
+      const max = Math.max(1, ...Object.values(counts));
+      body = `<div class="stat-bar-wrap">${
+        Object.entries(counts).sort((a,b)=>b[1]-a[1]).map(([k,v]) => `
+          <div class="stat-bar-row">
+            <span class="stat-bar-label" title="${escapeHtml(k)}">${escapeHtml(k)}</span>
+            <div class="stat-bar-track"><div class="stat-bar-fill" style="width:${(v/max)*100}%"></div></div>
+            <span class="stat-bar-val">${v} (${answered?Math.round(v/answered*100):0}%)</span>
+          </div>`).join('')
+      }</div>`;
+    } else if (q.type === 'checkbox'){
+      const counts = {};
+      for (const a of answers){
+        const arr = Array.isArray(a) ? a : [a];
+        for (const v of arr){ const k = statAnswerToText(v); counts[k]=(counts[k]||0)+1; }
+      }
+      const max = Math.max(1, ...Object.values(counts));
+      body = `<div class="stat-bar-wrap">${
+        Object.entries(counts).sort((a,b)=>b[1]-a[1]).map(([k,v]) => `
+          <div class="stat-bar-row">
+            <span class="stat-bar-label" title="${escapeHtml(k)}">${escapeHtml(k)}</span>
+            <div class="stat-bar-track"><div class="stat-bar-fill" style="width:${(v/max)*100}%"></div></div>
+            <span class="stat-bar-val">${v}</span>
+          </div>`).join('')
+      }</div>`;
+    } else if (q.type === 'number'){
+      const nums = answers.map(a => +a).filter(n => !isNaN(n));
+      if (nums.length){
+        const sum = nums.reduce((s,n)=>s+n,0);
+        const min = Math.min(...nums), max = Math.max(...nums);
+        const avg = sum/nums.length;
+        body = `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-top:8px">
+          <div class="settings-meta"><span class="lbl">Avg</span><span class="val">${avg.toFixed(2)}</span></div>
+          <div class="settings-meta"><span class="lbl">Min</span><span class="val">${min}</span></div>
+          <div class="settings-meta"><span class="lbl">Max</span><span class="val">${max}</span></div>
+          <div class="settings-meta"><span class="lbl">Sum</span><span class="val">${sum}</span></div>
+        </div>`;
+      }
+    } else {
+      const recent = answers.slice(0, 50);
+      body = `<div class="stat-text-answers">${
+        recent.length
+          ? recent.map(a => `<div class="stat-text-answer">${escapeHtml(statAnswerToText(a))}</div>`).join('')
+          : '<div style="font-size:.82rem;color:var(--text2)">No answers yet</div>'
+      }</div>`;
+    }
+
+    return `<div class="stat-q-block">
+      <div class="stat-q-title">${qi+1}. ${q.titleHtml || escapeHtml(q.title||'Untitled')} ${typeBadge}</div>
+      <div class="stat-q-meta"><i class="fa-solid fa-inbox"></i> ${answered} answered${answered!==statResponses.length?` of ${statResponses.length}`:''}</div>
+      ${body}
+    </div>`;
+  }).join('');
+}
+
+function statGetFilterableQuestions(){
+  return statGetFormQuestions(statCurrentFormId).filter(q =>
+    ['radio','checkbox','dropdown','scale'].includes(q.type)
+  );
+}
+
+function statQuestionOptions(q){
+  if (q.type === 'scale'){
+    const out = [];
+    for (let n = q.scaleMin||1; n <= (q.scaleMax||5); n++) out.push(String(n));
+    return out;
+  }
+  return (q.options || []).map(String);
+}
+
+function statRenderFilterRows(){
+  const host = $('#statFilterRows');
+  const qs = statGetFilterableQuestions();
+  if (!qs.length){
+    host.innerHTML = '<p style="font-size:.85rem;color:var(--text2)">This form has no choice-based questions to filter on.</p>';
+    return;
+  }
+  if (!statFilterDefs.length) statFilterDefs.push({ qid: qs[0].id, value: '' });
+
+  host.innerHTML = statFilterDefs.map((def, i) => {
+    const q = qs.find(x => x.id === def.qid) || qs[0];
+    const opts = statQuestionOptions(q);
+    return `<div class="stat-filter-row">
+      <select data-idx="${i}" data-role="q" style="flex:0 0 auto;min-width:160px">
+        ${qs.map(qq => `<option value="${qq.id}" ${qq.id===def.qid?'selected':''}>${escapeHtml(qq.title||'Untitled')}</option>`).join('')}
+      </select>
+      <select data-idx="${i}" data-role="v" style="flex:1">
+        <option value="">— any —</option>
+        ${opts.map(o => `<option value="${escapeHtml(o)}" ${o===def.value?'selected':''}>${escapeHtml(o)}</option>`).join('')}
+      </select>
+      <button class="icon-btn danger" data-idx="${i}" data-role="rm" title="Remove"><i class="fa-solid fa-xmark"></i></button>
+    </div>`;
+  }).join('');
+
+  host.querySelectorAll('select[data-role="q"]').forEach(sel => {
+    sel.addEventListener('change', e => {
+      const i = +e.target.dataset.idx;
+      statFilterDefs[i].qid = e.target.value;
+      statFilterDefs[i].value = '';
+      statRenderFilterRows();
+    });
+  });
+  host.querySelectorAll('select[data-role="v"]').forEach(sel => {
+    sel.addEventListener('change', e => {
+      const i = +e.target.dataset.idx;
+      statFilterDefs[i].value = e.target.value;
+    });
+  });
+  host.querySelectorAll('button[data-role="rm"]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      const i = +e.target.closest('button').dataset.idx;
+      statFilterDefs.splice(i,1);
+      statRenderFilterRows();
+    });
+  });
+}
+
+function statApplyFilters(){
+  const active = statFilterDefs.filter(d => d.value !== '');
+  const result = $('#statFilterResult');
+  if (!active.length){
+    result.innerHTML = '<div class="empty" style="padding:24px"><i class="fa-solid fa-filter-circle-xmark"></i><h3>No filters</h3><p>Add at least one filter with a value.</p></div>';
+    return;
+  }
+
+  const matched = statResponses.filter(r =>
+    active.every(d => {
+      const a = statGetAnswer(r, d.qid);
+      if (a == null) return false;
+      if (Array.isArray(a)) return a.map(String).includes(String(d.value));
+      return String(a) === String(d.value);
+    })
+  );
+
+  const qs = statGetFormQuestions(statCurrentFormId);
+  const desc = active.map(d => {
+    const q = qs.find(x => x.id === d.qid);
+    return `<span class="stat-answer-chip">${escapeHtml(q?.title||'Q')} = ${escapeHtml(d.value)}</span>`;
+  }).join(' <i class="fa-solid fa-plus" style="font-size:.65rem;color:var(--text2)"></i> ');
+
+  if (!matched.length){
+    result.innerHTML = `<div class="stat-filter-result-card">
+      <div class="stat-filter-result-head">
+        <div><div style="font-size:.82rem;color:var(--text2);margin-bottom:4px">Matching filters</div>${desc}</div>
+        <div class="stat-filter-result-count">0</div>
+      </div>
+      <p style="font-size:.86rem;color:var(--text2)">No responses matched this combination.</p>
+    </div>`;
+    return;
+  }
+
+  const filterQids = new Set(active.map(d => d.qid));
+  const otherQs = statGetFormQuestions(statCurrentFormId)
+    .filter(q => ['radio','checkbox','dropdown','scale'].includes(q.type))
+    .filter(q => !filterQids.has(q.id))
+    .slice(0, 2);
+
+  const breakdowns = otherQs.map(q => {
+    const counts = {};
+    for (const r of matched){
+      const a = statGetAnswer(r, q.id);
+      if (a == null) continue;
+      const arr = Array.isArray(a) ? a : [a];
+      for (const v of arr){
+        const k = statAnswerToText(v);
+        if (!k) continue;
+        counts[k] = (counts[k]||0) + 1;
+      }
+    }
+    const entries = Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+    if (!entries.length) return '';
+    const max = Math.max(...entries.map(e=>e[1]));
+    return `<div style="margin-top:14px">
+      <div style="font-size:.82rem;font-weight:600;color:var(--dark-blue);margin-bottom:8px">
+        ${escapeHtml(q.title||'Question')} breakdown
+      </div>
+      <div class="stat-bar-wrap">
+        ${entries.map(([k,v]) => `
+          <div class="stat-bar-row">
+            <span class="stat-bar-label" title="${escapeHtml(k)}">${escapeHtml(k)}</span>
+            <div class="stat-bar-track"><div class="stat-bar-fill" style="width:${(v/max)*100}%"></div></div>
+            <span class="stat-bar-val">${v} (${Math.round(v/matched.length*100)}%)</span>
+          </div>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+
+  result.innerHTML = `<div class="stat-filter-result-card">
+    <div class="stat-filter-result-head">
+      <div>
+        <div style="font-size:.82rem;color:var(--text2);margin-bottom:4px">Matching filters</div>
+        ${desc}
+      </div>
+      <div style="text-align:right">
+        <div class="stat-filter-result-count">${matched.length}</div>
+        <div style="font-size:.74rem;color:var(--text2)">of ${statResponses.length} responses (${Math.round(matched.length/statResponses.length*100)}%)</div>
+      </div>
+    </div>
+    ${breakdowns || '<p style="font-size:.85rem;color:var(--text2)">Add more question types to see cross-tab breakdowns.</p>'}
+  </div>`;
+}
+
+async function loadStatistics(){
+  populateStatFormSelect();
+  const sel = $('#statFormSelect');
+  statCurrentFormId = sel?.value || null;
+  statFilterDefs = [];
+  $('#statFilterResult').innerHTML = '';
+
+  if (!statCurrentFormId){
+    $('#statQuestions').innerHTML = '<div class="empty"><i class="fa-solid fa-chart-simple"></i><h3>No form selected</h3><p>Create a form first.</p></div>';
+    $('#statKpis').querySelectorAll('.sv').forEach(el => el.textContent = '0');
+    $('#statFilterRows').innerHTML = '';
+    return;
+  }
+
+  $('#statQuestions').innerHTML = '<div class="loader"><div class="spinner-lg"></div></div>';
+  await loadStatResponses(statCurrentFormId);
+  statRenderKpis();
+  statRenderQuestions();
+  statRenderFilterRows();
+}
+
+$('#statFormSelect')?.addEventListener('change', loadStatistics);
+$('#statRefreshBtn')?.addEventListener('click', loadStatistics);
+$('#statAddFilter')?.addEventListener('click', () => {
+  const qs = statGetFilterableQuestions();
+  if (!qs.length){ toast('No filterable questions', 'error'); return; }
+  statFilterDefs.push({ qid: qs[0].id, value: '' });
+  statRenderFilterRows();
+});
+$('#statClearFilters')?.addEventListener('click', () => {
+  statFilterDefs = [];
+  $('#statFilterResult').innerHTML = '';
+  statRenderFilterRows();
+});
+$('#statApplyFilters')?.addEventListener('click', statApplyFilters);
+
 /* ---------- Settings page ---------- */
 function hydrateAccountInfo(){
   if (!currentUser) return;
@@ -2083,7 +2486,6 @@ function hydrateAccountInfo(){
   const nameEl = $('#settingsName'); if (nameEl) nameEl.textContent = displayName;
   const em = $('#settingsEmail'); if (em) em.textContent = email;
 
-  // Role (from Firestore, or default)
   const rolePill = document.querySelector('.settings-role');
   if (rolePill){
     const role = docData.role || 'Administrator';
@@ -2107,7 +2509,6 @@ function hydrateAccountInfo(){
     verified.style.color = a.emailVerified ? 'var(--success)' : '#b8860b';
   }
 
-  // Prefer Firestore `createdAt` over Auth `creationTime`
   const since = $('#settingsSince');
   if (since){
     if (docData.createdAt){
@@ -2119,7 +2520,6 @@ function hydrateAccountInfo(){
     }
   }
 
-  // Optional extra fields — shown only if present in Firestore
   const opts = [
     { key:'department', wrap:'#metaDepartment', val:'#settingsDepartment' },
     { key:'position',   wrap:'#metaPosition',   val:'#settingsPosition'   },
