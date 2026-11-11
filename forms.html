@@ -7,6 +7,9 @@
 <link rel="icon" href="https://wxyzofficial.sirv.com/SSU/ssu.jpg">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<!-- PDF export (same CDN family used across the site) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <style>
 :root{
   --light-blue:#DCEEFF; --primary:#4A90E2; --dark-blue:#173B63;
@@ -52,12 +55,6 @@ main{flex:1;padding:34px 20px 60px}
 
 .form-header .header-img{margin-top:18px;border-radius:12px;overflow:hidden;max-height:280px}
 .form-header .header-img img{width:100%;height:100%;object-fit:cover;display:block}
-
-/* Progress Bar */
-.progress-wrap{background:#fff;border-radius:20px;box-shadow:var(--shadow);border:1px solid var(--border);padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:14px}
-.progress-bar{flex:1;height:8px;background:var(--border);border-radius:99px;overflow:hidden}
-.progress-fill{height:100%;background:var(--primary);width:0%;transition:width .3s ease}
-.progress-text{font-size:.8rem;font-weight:600;color:var(--text2);white-space:nowrap}
 
 /* Sections */
 .section-block{display:none}
@@ -130,6 +127,8 @@ textarea{resize:vertical;min-height:100px;line-height:1.5}
 .btn-ghost{background:#fff;border:1px solid var(--border);color:var(--dark-blue)}
 .btn-ghost:hover:not(:disabled){border-color:var(--primary);color:var(--primary)}
 .btn-ghost:disabled{opacity:.5;cursor:not-allowed}
+.btn-accent{background:var(--accent);color:var(--dark-blue);box-shadow:0 6px 16px rgba(255,213,79,.35)}
+.btn-accent:hover:not(:disabled){background:#ffc91f;transform:translateY(-1px)}
 .full-btn{width:100%}
 .spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:none}
 .loading .spinner{display:block}
@@ -143,9 +142,10 @@ textarea{resize:vertical;min-height:100px;line-height:1.5}
 .state.error .icon{background:#fde8ea;color:var(--error)}
 .state h2{font-size:1.35rem;color:var(--dark-blue);margin-bottom:10px}
 .state p{color:var(--text2);font-size:.95rem;margin-bottom:22px;line-height:1.6}
+.state .state-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
 
 /* Toast */
-.toast-wrap{position:fixed;bottom:24px;right:24px;display:flex;flex-direction:column;gap:10px;z-index:300}
+.toast-wrap{position:fixed;bottom:24px;right:24px;display:flex;flex-direction:column;gap:10px;z-index:400}
 .toast{background:#fff;border-left:4px solid var(--primary);border-radius:10px;box-shadow:var(--shadow-lg);padding:14px 18px;display:flex;align-items:center;gap:12px;font-size:.9rem;min-width:260px;animation:slideIn .3s}
 .toast.success{border-left-color:var(--success)}
 .toast.error{border-left-color:var(--error)}
@@ -154,6 +154,110 @@ textarea{resize:vertical;min-height:100px;line-height:1.5}
 .toast.error i{color:var(--error)}
 @keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
 
+/* ---------- Review Modal ---------- */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(23,59,99,.55);backdrop-filter:blur(3px);
+  display:none;align-items:center;justify-content:center;z-index:500;padding:20px;
+  animation:fade .2s;overflow-y:auto;
+}
+.modal-overlay.show{display:flex}
+.modal{
+  background:#fff;border-radius:20px;max-width:680px;width:100%;max-height:90vh;
+  box-shadow:var(--shadow-lg);display:flex;flex-direction:column;
+  animation:pop .25s;overflow:hidden;
+}
+@keyframes pop{from{transform:scale(.96);opacity:0}to{transform:scale(1);opacity:1}}
+.modal-head{
+  padding:20px 24px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:12px;background:linear-gradient(180deg,#f8fbff,#fff);
+}
+.modal-head .m-icon{
+  width:44px;height:44px;border-radius:12px;background:var(--light-blue);
+  color:var(--primary);display:flex;align-items:center;justify-content:center;
+  font-size:1.1rem;flex-shrink:0;
+}
+.modal-head .m-title{flex:1;min-width:0}
+.modal-head h3{font-size:1.05rem;color:var(--dark-blue);line-height:1.3}
+.modal-head p{font-size:.82rem;color:var(--text2);margin-top:2px}
+.modal-close{
+  width:34px;height:34px;border-radius:8px;color:var(--text2);
+  display:inline-flex;align-items:center;justify-content:center;
+}
+.modal-close:hover{background:var(--bg);color:var(--dark-blue)}
+.modal-body{padding:20px 24px;overflow-y:auto;flex:1}
+.modal-foot{
+  padding:14px 24px;border-top:1px solid var(--border);background:var(--bg);
+  display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;
+}
+.modal-foot .foot-info{font-size:.8rem;color:var(--text2)}
+.modal-foot .foot-btns{display:flex;gap:8px;margin-left:auto;flex-wrap:wrap}
+
+.review-summary{
+  display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;
+}
+.review-pill{
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--light-blue);color:var(--dark-blue);
+  padding:6px 12px;border-radius:99px;font-size:.78rem;font-weight:600;
+}
+.review-pill.success{background:#e3f5ea;color:var(--success)}
+.review-pill.error{background:#fde8ea;color:var(--error)}
+
+.review-section{
+  border:1px solid var(--border);border-radius:14px;
+  margin-bottom:14px;overflow:hidden;background:#fff;
+}
+.review-section .rs-head{
+  padding:12px 16px;background:var(--bg);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;
+}
+.review-section .rs-head .rs-num{
+  width:24px;height:24px;border-radius:50%;background:var(--primary);color:#fff;
+  display:inline-flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;flex-shrink:0;
+}
+.review-section .rs-head .rs-title{
+  flex:1;font-size:.9rem;font-weight:700;color:var(--dark-blue);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.review-section .rs-head .rs-edit{
+  display:inline-flex;align-items:center;gap:5px;padding:5px 10px;
+  border-radius:8px;background:#fff;border:1px solid var(--border);
+  font-size:.76rem;font-weight:600;color:var(--primary);
+}
+.review-section .rs-head .rs-edit:hover{border-color:var(--primary);background:var(--light-blue)}
+.review-row{
+  padding:11px 16px;border-bottom:1px dashed var(--border);
+  display:flex;flex-direction:column;gap:4px;
+}
+.review-row:last-child{border-bottom:none}
+.review-row .rr-q{
+  font-size:.82rem;font-weight:600;color:var(--dark-blue);
+  display:flex;gap:6px;align-items:flex-start;flex-wrap:wrap;
+}
+.review-row .rr-q .req{color:var(--error)}
+.review-row .rr-a{
+  font-size:.88rem;color:var(--text);white-space:pre-wrap;word-break:break-word;line-height:1.5;
+}
+.review-row .rr-a.empty{color:var(--text2);font-style:italic}
+.review-row .rr-actions{
+  margin-top:2px;
+}
+.review-row .rr-link{
+  font-size:.76rem;color:var(--primary);font-weight:600;
+  display:inline-flex;align-items:center;gap:5px;
+}
+.review-row .rr-link:hover{text-decoration:underline}
+
+/* ---------- PDF loading pill ---------- */
+.pdf-loading{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+  background:var(--dark-blue);color:#fff;padding:10px 20px;border-radius:99px;
+  font-size:.85rem;display:none;align-items:center;gap:10px;
+  box-shadow:var(--shadow-lg);z-index:600;
+}
+.pdf-loading.show{display:flex}
+.pdf-loading .spinner{display:block;border-top-color:#fff;border-color:rgba(255,255,255,.4)}
+
 @media(max-width:600px){
   .form-header{padding:26px 22px 20px}
   .section-header{padding:20px 22px}
@@ -161,6 +265,9 @@ textarea{resize:vertical;min-height:100px;line-height:1.5}
   .nav-wrap{padding:18px 22px}
   .form-header h1{font-size:1.35rem}
   .nav-wrap .btn{width:100%}
+  .modal-foot{flex-direction:column;align-items:stretch}
+  .modal-foot .foot-btns{width:100%;margin-left:0}
+  .modal-foot .foot-btns .btn{flex:1}
 }
 </style>
 </head>
@@ -187,6 +294,39 @@ textarea{resize:vertical;min-height:100px;line-height:1.5}
 </main>
 
 <div class="toast-wrap" id="toastWrap"></div>
+
+<!-- Review modal -->
+<div class="modal-overlay" id="reviewOverlay">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="reviewTitle">
+    <div class="modal-head">
+      <div class="m-icon"><i class="fa-solid fa-list-check"></i></div>
+      <div class="m-title">
+        <h3 id="reviewTitle">Review Your Answers</h3>
+        <p>Check your responses below. You can edit any section before submitting.</p>
+      </div>
+      <button class="modal-close" id="reviewCloseBtn" aria-label="Close review">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <div class="modal-body" id="reviewBody"></div>
+    <div class="modal-foot">
+      <div class="foot-info" id="reviewFootInfo"></div>
+      <div class="foot-btns">
+        <button class="btn btn-ghost" id="reviewCancelBtn">
+          <i class="fa-solid fa-pen"></i> Keep Editing
+        </button>
+        <button class="btn btn-primary" id="reviewSubmitBtn">
+          <span class="spinner"></span>
+          <span class="btn-text"><i class="fa-solid fa-paper-plane"></i> Submit Response</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="pdf-loading" id="pdfLoading">
+  <span class="spinner"></span> Generating PDF receipt…
+</div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -215,6 +355,39 @@ let formId = null;
 let anonUser = null;
 let currentSectionIndex = 0;
 let navigationHistory = [];
+let pendingAnswers = null;   // snapshot of answers taken when review opens
+let lastSubmission = null;   // { answers, responseId, submittedAt }
+let submitting = false;
+
+/* The SSU + CHED logos are raster images on a third-party CDN. For the PDF
+   receipt we fetch them once and cache them as data URLs so jsPDF can embed
+   them without CORS retries. Failure is silent — the receipt still renders. */
+const PDF_LOGOS = {
+  ssu: { url:'https://wxyzofficial.sirv.com/SSU/ssu.jpg',  data:null },
+  ched:{ url:'https://wxyzofficial.sirv.com/SSU/ched.png', data:null }
+};
+async function loadPdfLogos(){
+  for (const key of Object.keys(PDF_LOGOS)){
+    const L = PDF_LOGOS[key];
+    if (L.data) continue;
+    try {
+      const res = await fetch(L.url, { mode: 'cors' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const blob = await res.blob();
+      L.data = await blobToDataURL(blob);
+    } catch (err){
+      console.warn('Logo fetch failed for PDF:', key, err.message);
+    }
+  }
+}
+function blobToDataURL(blob){
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(r.result);
+    r.onerror = reject;
+    r.readAsDataURL(blob);
+  });
+}
 
 function escapeHtml(s){ const d = document.createElement('div'); d.textContent = s == null ? '' : String(s); return d.innerHTML; }
 
@@ -233,11 +406,11 @@ function showState(type, icon, title, msg, actionHtml=''){
     <div class="icon"><i class="fa-solid ${icon}"></i></div>
     <h2>${escapeHtml(title)}</h2>
     <p>${escapeHtml(msg)}</p>
-    ${actionHtml}
+    <div class="state-actions">${actionHtml}</div>
   </div>`;
 }
 
-/* --- Read form id from URL --- */
+/* --- URL id --- */
 const params = new URLSearchParams(window.location.search);
 formId = params.get('id');
 if (!formId){
@@ -245,7 +418,7 @@ if (!formId){
     `<a class="btn btn-primary" href="index.html"><i class="fa-solid fa-house"></i> Go to Homepage</a>`);
 }
 
-/* --- Load form after anonymous auth --- */
+/* --- Auth --- */
 onAuthStateChanged(auth, async (user) => {
   if (!user){
     try { const cred = await signInAnonymously(auth); anonUser = cred.user; }
@@ -254,6 +427,7 @@ onAuthStateChanged(auth, async (user) => {
   if (formId) loadForm();
 });
 
+/* --- Load form --- */
 async function loadForm(){
   try {
     const ref = doc(db, 'forms', formId);
@@ -288,7 +462,7 @@ async function loadForm(){
   }
 }
 
-/* Fallback for older forms that used a flat `questions` array */
+/* --- Sections --- */
 function getSections(){
   if (Array.isArray(formData.sections) && formData.sections.length) {
     return formData.sections;
@@ -296,32 +470,28 @@ function getSections(){
   return [{ id: 'sec_1', title: 'Form Questions', titleHtml: '', description: '', descriptionHtml: '', questions: formData.questions || [] }];
 }
 
+/* --- Render form --- */
 function renderForm(){
   const s = formData.settings || {};
   const theme = s.themeColor || '#4A90E2';
   const sections = getSections();
-  
-  // Identify target sections (those that are jumped to via conditional logic)
+
   const targetSections = {};
   sections.forEach((sec) => {
     (sec.questions || []).forEach((q) => {
       if (q.branching && Object.keys(q.branching).length > 0) {
-        Object.values(q.branching).forEach((targetId) => {
-          targetSections[targetId] = true;
-        });
+        Object.values(q.branching).forEach((targetId) => { targetSections[targetId] = true; });
       }
     });
   });
 
-  // Find the entry point section (the first one that is NOT a target)
   let startIndex = sections.findIndex(sec => !targetSections[sec.id]);
-  if (startIndex === -1) startIndex = 0; // fallback if all are targets
+  if (startIndex === -1) startIndex = 0;
 
   currentSectionIndex = startIndex;
   navigationHistory = [startIndex];
 
   const headerImg = s.headerImage ? `<div class="header-img"><img src="${escapeHtml(s.headerImage)}" alt="Header"></div>` : '';
-  
   const titleHtml = formData.titleHtml || escapeHtml(formData.title||'Untitled Form');
   const descHtml = formData.descriptionHtml || (formData.description ? escapeHtml(formData.description) : '');
 
@@ -335,28 +505,22 @@ function renderForm(){
 
   html += `<form id="responseForm" novalidate>`;
 
-  // Render each section WITHOUT its own nav wrap. A single shared nav bar is
-  // rendered at the bottom of the card and driven by JS state so the Back
-  // button always reflects the real navigation history.
   sections.forEach((sec, si) => {
     const isActive = si === startIndex ? 'active' : '';
     const secTitleHtml = sec.titleHtml || escapeHtml(sec.title||'Section '+(si+1));
     const secDescHtml = sec.descriptionHtml || (sec.description ? escapeHtml(sec.description) : '');
 
     html += `<div class="section-block ${isActive}" data-section="${si}">`;
-    
     if (sections.length > 1 || sec.titleHtml || sec.title || secDescHtml) {
       html += `<div class="section-header">
         <h2>${secTitleHtml}</h2>
         ${secDescHtml ? `<div class="s-desc">${secDescHtml}</div>` : ''}
       </div>`;
     }
-
     html += `<div class="form-body" id="secBody_${si}"></div>`;
     html += `</div>`;
   });
 
-  // Shared navigation bar (Back / Next / Submit)
   html += `<div class="nav-wrap" id="navWrap">
     <button type="button" class="btn btn-ghost" id="backBtn" disabled>
       <i class="fa-solid fa-arrow-left"></i> Back
@@ -370,22 +534,17 @@ function renderForm(){
   html += `</form></div>`;
   main.innerHTML = html;
 
-  // Mount questions
   sections.forEach((sec, si) => {
     const body = $(`#secBody_${si}`);
     (sec.questions || []).forEach((q, qi) => body.appendChild(renderQuestion(q, qi)));
   });
 
-  $('#responseForm').addEventListener('submit', onSubmit);
-
-  // Wire nav buttons
+  $('#responseForm').addEventListener('submit', (e) => e.preventDefault()); // handled explicitly
   $('#backBtn').addEventListener('click', prevSection);
   $('#nextBtn').addEventListener('click', () => nextSection(currentSectionIndex));
-
   updateNavBar();
 }
 
-/* Update Back / Next button labels & disabled states based on current state */
 function updateNavBar(){
   const backBtn = $('#backBtn');
   const nextBtn = $('#nextBtn');
@@ -398,16 +557,17 @@ function updateNavBar(){
   const nextSi = getNextSectionIndex(currentSectionIndex);
   if (nextSi === -1) {
     nextBtn.innerHTML = `<span class="spinner"></span>
-      <span class="btn-text">${escapeHtml((formData.settings?.submitLabel) || 'Submit')} <i class="fa-solid fa-paper-plane"></i></span>`;
+      <span class="btn-text"><i class="fa-solid fa-list-check"></i> Review &amp; Submit</span>`;
   } else {
     nextBtn.innerHTML = `<span class="spinner"></span>
       <span class="btn-text">Next <i class="fa-solid fa-arrow-right"></i></span>`;
   }
 }
 
+/* --- Validation --- */
 function validateSection(si){
   const secDiv = document.querySelector(`.section-block[data-section="${si}"]`);
-  if (!secDiv) return true;
+  if (!secDiv) return { ok:true, firstError:null };
   const questions = secDiv.querySelectorAll('.question');
   let firstErr = null;
   let hasError = false;
@@ -447,45 +607,34 @@ function validateSection(si){
     }
   });
 
-  if (hasError){
-    firstErr.scrollIntoView({behavior:'smooth', block:'center'});
-    toast('Please fix the highlighted fields before proceeding.', 'error');
-    return false;
-  }
-  return true;
+  return { ok: !hasError, firstError: firstErr };
 }
 
+/* --- Branching --- */
 function getNextSectionIndex(currentSi){
   const sections = getSections();
   const currentSec = sections[currentSi];
   let nextSi = -1;
 
-  // Check for branching rules
   if (currentSec.questions && currentSec.questions.length) {
     for (const q of currentSec.questions) {
       if (q.branching && Object.keys(q.branching).length > 0) {
         const qDiv = document.querySelector(`.question[data-qid="${q.id}"]`);
         if (!qDiv) continue;
-
         let selectedValue = null;
         if (q.type === 'radio' || q.type === 'dropdown') {
-          const sel = qDiv.querySelector('input[type="radio"]:checked, select');
+          const sel = qDiv.querySelector(`input[type="radio"]:checked, select`);
           if (sel) selectedValue = sel.value;
         }
-
         if (selectedValue && q.branching[selectedValue]) {
           const targetSectionId = q.branching[selectedValue];
           const targetIndex = sections.findIndex(s => s.id === targetSectionId);
-          if (targetIndex !== -1) {
-            nextSi = targetIndex;
-            break; // Apply the first matched branch rule
-          }
+          if (targetIndex !== -1) { nextSi = targetIndex; break; }
         }
       }
     }
   }
 
-  // If no branch applied, find the next natural section that is NOT a target of branching
   if (nextSi === -1) {
     const targetSections = {};
     sections.forEach(sec => {
@@ -493,56 +642,50 @@ function getNextSectionIndex(currentSi){
         if (q.branching) Object.values(q.branching).forEach(id => targetSections[id] = true);
       });
     });
-
     for (let i = currentSi + 1; i < sections.length; i++) {
-      if (!targetSections[sections[i].id]) {
-        nextSi = i;
-        break;
-      }
+      if (!targetSections[sections[i].id]) { nextSi = i; break; }
     }
   }
-
   return nextSi;
 }
 
 function nextSection(currentSi){
-  if (!validateSection(currentSi)) return;
-  
+  const v = validateSection(currentSi);
+  if (!v.ok){
+    v.firstError?.scrollIntoView({behavior:'smooth', block:'center'});
+    toast('Please fix the highlighted fields before proceeding.', 'error');
+    return;
+  }
+
   const nextSi = getNextSectionIndex(currentSi);
   const blocks = document.querySelectorAll('.section-block');
 
   if (nextSi === -1) {
-    // No more natural sections; this is the last one. Submit.
-    document.getElementById('responseForm').dispatchEvent(new Event('submit', { cancelable: true }));
+    openReviewModal();
     return;
   }
 
   blocks[currentSi].classList.remove('active');
   blocks[nextSi].classList.add('active');
-  
   navigationHistory.push(nextSi);
   currentSectionIndex = nextSi;
-
-  // Scroll the newly revealed section into view
   blocks[nextSi].scrollIntoView({ behavior: 'smooth', block: 'start' });
   updateNavBar();
 }
 
 function prevSection(){
   if (navigationHistory.length <= 1) return;
-  
   navigationHistory.pop();
   const prevSi = navigationHistory[navigationHistory.length - 1];
   const blocks = document.querySelectorAll('.section-block');
-  
   blocks[currentSectionIndex].classList.remove('active');
   blocks[prevSi].classList.add('active');
   currentSectionIndex = prevSi;
-
   blocks[prevSi].scrollIntoView({ behavior: 'smooth', block: 'start' });
   updateNavBar();
 }
 
+/* --- Question finder & renderer --- */
 function findQuestion(qid){
   const sections = getSections();
   for (const sec of sections) {
@@ -617,36 +760,17 @@ function renderQuestion(q, i){
   return div;
 }
 
-/* --- Submit --- */
-let submitting = false;
-async function onSubmit(e){
-  e.preventDefault();
-  if (submitting) return;
-
-  // Validate every section that was actually visited
-  let allValid = true;
-  for (const si of navigationHistory) {
-    if (!validateSection(si)) {
-      allValid = false;
-      document.querySelectorAll('.section-block').forEach(b => b.classList.remove('active'));
-      const target = document.querySelector(`.section-block[data-section="${si}"]`);
-      target.classList.add('active');
-      currentSectionIndex = si;
-      updateNavBar();
-      break;
-    }
-  }
-  if (!allValid) return;
-
+/* --- Answer collection (only visited sections) --- */
+function collectAnswers(visitedOnly = true){
   const answers = {};
-  navigationHistory.forEach(si => {
+  const sectionsToScan = visitedOnly ? navigationHistory : [...Array(getSections().length).keys()];
+  sectionsToScan.forEach(si => {
     const secDiv = document.querySelector(`.section-block[data-section="${si}"]`);
     if (!secDiv) return;
     secDiv.querySelectorAll('.question').forEach(qDiv => {
       const qid = qDiv.dataset.qid;
       const qtype = qDiv.dataset.qtype;
       let val = null;
-
       if (qtype === 'checkbox'){
         val = [...qDiv.querySelectorAll(`input[type=checkbox]:checked`)].map(c => c.value);
       } else if (qtype === 'radio' || qtype === 'scale'){
@@ -659,6 +783,187 @@ async function onSubmit(e){
       answers[qid] = val;
     });
   });
+  return answers;
+}
+
+/* ================================================================
+   REVIEW MODAL
+   ================================================================ */
+function openReviewModal(){
+  // Validate all visited sections first
+  for (const si of navigationHistory){
+    const v = validateSection(si);
+    if (!v.ok){
+      document.querySelectorAll('.section-block').forEach(b => b.classList.remove('active'));
+      const target = document.querySelector(`.section-block[data-section="${si}"]`);
+      target.classList.add('active');
+      currentSectionIndex = si;
+      updateNavBar();
+      v.firstError?.scrollIntoView({behavior:'smooth', block:'center'});
+      toast('Please complete the highlighted required fields.', 'error');
+      return;
+    }
+  }
+
+  pendingAnswers = collectAnswers(true);
+  buildReviewBody();
+  $('#reviewOverlay').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeReviewModal(){
+  $('#reviewOverlay').classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+function buildReviewBody(){
+  const sections = getSections();
+  const body = $('#reviewBody');
+  body.innerHTML = '';
+
+  // Summary pills
+  let totalQ = 0, answeredQ = 0, requiredQ = 0, requiredAnswered = 0;
+  sections.forEach((sec) => {
+    if (!navigationHistory.includes(sections.indexOf(sec))) return;
+    (sec.questions || []).forEach(q => {
+      totalQ++;
+      if (q.required) requiredQ++;
+      const v = pendingAnswers[q.id];
+      const filled = Array.isArray(v) ? v.length > 0 : (v !== '' && v !== null && v !== undefined);
+      if (filled){ answeredQ++; if (q.required) requiredAnswered++; }
+    });
+  });
+
+  const summary = document.createElement('div');
+  summary.className = 'review-summary';
+  summary.innerHTML = `
+    <span class="review-pill"><i class="fa-solid fa-circle-question"></i> ${totalQ} question${totalQ!==1?'s':''}</span>
+    <span class="review-pill success"><i class="fa-solid fa-circle-check"></i> ${answeredQ} answered</span>
+    ${requiredQ ? `<span class="review-pill ${requiredAnswered===requiredQ?'success':'error'}">
+      <i class="fa-solid fa-asterisk"></i> ${requiredAnswered}/${requiredQ} required
+    </span>` : ''}
+  `;
+  body.appendChild(summary);
+
+  // Sections that the user actually visited
+  let displayIdx = 0;
+  sections.forEach((sec, si) => {
+    if (!navigationHistory.includes(si)) return;
+    displayIdx++;
+
+    const secEl = document.createElement('div');
+    secEl.className = 'review-section';
+
+    const head = document.createElement('div');
+    head.className = 'rs-head';
+    const secTitle = (sec.title || '').toString().trim() || `Section ${displayIdx}`;
+    head.innerHTML = `
+      <span class="rs-num">${displayIdx}</span>
+      <span class="rs-title"></span>
+      <button type="button" class="rs-edit" data-sec="${si}">
+        <i class="fa-solid fa-pen"></i> Edit
+      </button>
+    `;
+    head.querySelector('.rs-title').textContent = secTitle;
+    head.querySelector('.rs-edit').addEventListener('click', () => {
+      closeReviewModal();
+      // Jump to that section
+      document.querySelectorAll('.section-block').forEach(b => b.classList.remove('active'));
+      const target = document.querySelector(`.section-block[data-section="${si}"]`);
+      target.classList.add('active');
+      currentSectionIndex = si;
+      // Keep navigation history coherent
+      if (!navigationHistory.includes(si)) navigationHistory.push(si);
+      updateNavBar();
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+    secEl.appendChild(head);
+
+    (sec.questions || []).forEach((q) => {
+      const row = document.createElement('div');
+      row.className = 'review-row';
+      const val = pendingAnswers[q.id];
+      const display = formatAnswerForDisplay(val, q);
+      const isEmpty = display === '';
+      row.innerHTML = `
+        <div class="rr-q">
+          <span class="rr-q-text"></span>
+          ${q.required ? '<span class="req">*</span>' : ''}
+        </div>
+        <div class="rr-a ${isEmpty ? 'empty' : ''}"></div>
+        <div class="rr-actions">
+          <a href="javascript:void(0)" class="rr-link" data-jump="${si}" data-qid="${q.id}">
+            <i class="fa-solid fa-pen-to-square"></i> Edit this answer
+          </a>
+        </div>
+      `;
+      row.querySelector('.rr-q-text').textContent = q.title || 'Question';
+      row.querySelector('.rr-a').textContent = isEmpty ? '(not answered)' : display;
+      row.querySelector('.rr-link').addEventListener('click', () => {
+        closeReviewModal();
+        document.querySelectorAll('.section-block').forEach(b => b.classList.remove('active'));
+        const target = document.querySelector(`.section-block[data-section="${si}"]`);
+        target.classList.add('active');
+        currentSectionIndex = si;
+        if (!navigationHistory.includes(si)) navigationHistory.push(si);
+        updateNavBar();
+        // Scroll & focus this specific question
+        const qDiv = target.querySelector(`.question[data-qid="${q.id}"]`);
+        if (qDiv){
+          qDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          const inp = qDiv.querySelector('input,textarea,select');
+          if (inp) setTimeout(() => inp.focus({ preventScroll: true }), 400);
+        }
+      });
+      secEl.appendChild(row);
+    });
+
+    body.appendChild(secEl);
+  });
+
+  // Footer info
+  $('#reviewFootInfo').textContent = requiredAnswered < requiredQ
+    ? `${requiredQ - requiredAnswered} required question${requiredQ-requiredAnswered!==1?'s':''} still unanswered`
+    : 'All required questions are answered.';
+  $('#reviewSubmitBtn').disabled = requiredAnswered < requiredQ;
+}
+
+function formatAnswerForDisplay(v, q){
+  if (v === null || v === undefined || v === '') return '';
+  if (Array.isArray(v)) return v.filter(Boolean).join(', ');
+  if (q && q.type === 'scale'){
+    const n = Number(v);
+    if (!isNaN(n)){
+      const min = q.scaleMinLabel, max = q.scaleMaxLabel;
+      const minN = q.scaleMin ?? 1, maxN = q.scaleMax ?? 5;
+      if (min && n === minN) return `${n} (${min})`;
+      if (max && n === maxN) return `${n} (${max})`;
+    }
+  }
+  return String(v);
+}
+
+/* --- Review modal button wiring --- */
+$('#reviewCloseBtn').addEventListener('click', closeReviewModal);
+$('#reviewCancelBtn').addEventListener('click', closeReviewModal);
+$('#reviewOverlay').addEventListener('click', (e) => {
+  if (e.target === $('#reviewOverlay')) closeReviewModal();
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && $('#reviewOverlay').classList.contains('show')) closeReviewModal();
+});
+
+$('#reviewSubmitBtn').addEventListener('click', async () => {
+  const btn = $('#reviewSubmitBtn');
+  if (btn.disabled || submitting) return;
+  await submitResponse(pendingAnswers, btn);
+});
+
+/* ================================================================
+   SUBMIT
+   ================================================================ */
+async function submitResponse(answers, btnEl){
+  if (submitting) return;
 
   if (!auth.currentUser){
     try { await signInAnonymously(auth); }
@@ -666,23 +971,22 @@ async function onSubmit(e){
   }
 
   submitting = true;
-  const nextBtn = $('#nextBtn');
-  if (nextBtn) {
-    nextBtn.classList.add('loading');
-    nextBtn.disabled = true;
-  }
+  const btn = btnEl || $('#reviewSubmitBtn');
+  const origHTML = btn.innerHTML;
+  btn.disabled = true;
+  btn.classList.add('loading');
 
   try {
     const fresh = await getDoc(doc(db, 'forms', formId));
     if (!fresh.exists() || fresh.data().status !== 'published' || fresh.data().settings?.acceptingResponses === false){
       toast('This form is no longer accepting responses.', 'error');
-      if (nextBtn) { nextBtn.classList.remove('loading'); nextBtn.disabled = false; }
+      btn.disabled = false; btn.classList.remove('loading');
       submitting = false;
       return;
     }
 
     const respCol = collection(db, 'forms', formId, 'responses');
-    await addDoc(respCol, {
+    const docRef = await addDoc(respCol, {
       formId,
       answers,
       submittedAt: serverTimestamp(),
@@ -694,15 +998,231 @@ async function onSubmit(e){
       await updateDoc(doc(db, 'forms', formId), { responseCount: increment(1) });
     } catch(e){ console.warn('Count update failed:', e.message); }
 
-    const s = formData.settings || {};
-    showState('success','fa-circle-check','Response Submitted',
-      s.confirmationMessage || 'Thank you! Your response has been recorded.',
-      s.allowMultiple === false ? '' : `<button class="btn btn-ghost" onclick="location.reload()"><i class="fa-solid fa-rotate"></i> Submit Another Response</button>`);
+    const submittedAt = new Date();
+    lastSubmission = {
+      answers: { ...answers },
+      responseId: docRef.id,
+      submittedAt
+    };
+
+    closeReviewModal();
+    showSuccessScreen();
   } catch(e){
     console.error(e);
     toast('Could not submit response: ' + (e.message || 'Unknown error'), 'error');
-    if (nextBtn) { nextBtn.classList.remove('loading'); nextBtn.disabled = false; }
+    btn.disabled = false; btn.classList.remove('loading');
     submitting = false;
+  }
+}
+
+/* ================================================================
+   SUCCESS SCREEN
+   ================================================================ */
+function showSuccessScreen(){
+  const s = formData.settings || {};
+  const allowMultiple = s.allowMultiple !== false;
+  const msg = s.confirmationMessage || 'Thank you! Your response has been recorded.';
+
+  const actions = `
+    <button class="btn btn-accent" id="downloadPdfBtn">
+      <i class="fa-solid fa-file-pdf"></i> Download Response (PDF)
+    </button>
+    ${allowMultiple
+      ? `<button class="btn btn-ghost" id="submitAnotherBtn">
+           <i class="fa-solid fa-rotate"></i> Submit Another Response
+         </button>`
+      : ''}
+  `;
+
+  showState('success','fa-circle-check','Response Submitted', msg, actions);
+
+  const pdfBtn = document.getElementById('downloadPdfBtn');
+  if (pdfBtn) pdfBtn.addEventListener('click', () => downloadResponsePdf(pdfBtn));
+
+  const anotherBtn = document.getElementById('submitAnotherBtn');
+  if (anotherBtn){
+    anotherBtn.addEventListener('click', () => {
+      lastSubmission = null;
+      submitting = false;
+      // Reset form: go back to first entry section
+      renderForm();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+}
+
+/* ================================================================
+   PDF RECEIPT
+   ================================================================ */
+async function downloadResponsePdf(btnEl){
+  if (!lastSubmission){ toast('Nothing to download', 'error'); return; }
+
+  const btn = btnEl || document.getElementById('downloadPdfBtn');
+  const origHTML = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Generating…`;
+  $('#pdfLoading').classList.add('show');
+
+  try {
+    // Load logos (cached after first success)
+    await loadPdfLogos();
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
+
+    const pageW = doc.internal.pageSize.getWidth();
+    const pageH = doc.internal.pageSize.getHeight();
+    const margin = 40;
+
+    /* -------- Header band -------- */
+    doc.setFillColor(23, 59, 99); // dark blue
+    doc.rect(0, 0, pageW, 96, 'F');
+    // Accent stripe
+    doc.setFillColor(255, 213, 79); // yellow
+    doc.rect(0, 96, pageW, 6, 'F');
+
+    // Logos
+    let logoX = margin;
+    const logoSize = 52;
+    try {
+      if (PDF_LOGOS.ssu.data)  doc.addImage(PDF_LOGOS.ssu.data,  'JPEG', logoX, 22, logoSize, logoSize);
+      logoX += logoSize + 10;
+      if (PDF_LOGOS.ched.data) doc.addImage(PDF_LOGOS.ched.data, 'PNG',  logoX, 22, logoSize, logoSize);
+    } catch(err){ console.warn('Logo embed skipped:', err.message); }
+
+    // Title block
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.text('OVPSAS FORMS', pageW - margin, 34, { align: 'right' });
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.text('Official Response Receipt', pageW - margin, 48, { align: 'right' });
+    doc.setFontSize(8);
+    doc.setTextColor(200, 219, 240);
+    doc.text(`Generated: ${new Date().toLocaleString('en-PH')}`, pageW - margin, 62, { align: 'right' });
+
+    /* -------- Form title -------- */
+    let y = 130;
+    doc.setTextColor(23, 59, 99);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(16);
+    const titleLines = doc.splitTextToSize(formData.title || 'Untitled Form', pageW - margin*2);
+    doc.text(titleLines, margin, y);
+    y += titleLines.length * 20 + 4;
+
+    if (formData.description){
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
+      doc.setTextColor(100, 116, 139);
+      const descLines = doc.splitTextToSize(formData.description, pageW - margin*2);
+      doc.text(descLines, margin, y);
+      y += descLines.length * 13 + 8;
+    }
+
+    /* -------- Meta box -------- */
+    y += 4;
+    doc.setFillColor(245, 249, 254); // --bg
+    doc.roundedRect(margin, y, pageW - margin*2, 64, 8, 8, 'F');
+    doc.setTextColor(23, 59, 99);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.text('REFERENCE ID', margin + 14, y + 18);
+    doc.text('SUBMITTED AT', margin + (pageW - margin*2)/2 + 4, y + 18);
+
+    doc.setFont('courier', 'normal');
+    doc.setFontSize(10);
+    doc.setTextColor(36, 52, 71);
+    doc.text(lastSubmission.responseId, margin + 14, y + 36);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.text(lastSubmission.submittedAt.toLocaleString('en-PH'), margin + (pageW - margin*2)/2 + 4, y + 36);
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.setTextColor(23, 59, 99);
+    doc.text('STATUS', margin + 14, y + 52);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(25, 135, 84);
+    doc.text('Recorded successfully', margin + 14 + 52, y + 52);
+
+    y += 84;
+
+    /* -------- Answers table -------- */
+    const rows = [];
+    getSections().forEach((sec, si) => {
+      if (!navigationHistory.includes(si)) return;
+      (sec.questions || []).forEach((q) => {
+        const v = lastSubmission.answers[q.id];
+        const display = formatAnswerForDisplay(v, q);
+        rows.push([
+          q.title || 'Question',
+          display || '(not answered)'
+        ]);
+      });
+    });
+
+    doc.autoTable({
+      head: [['Question', 'Response']],
+      body: rows,
+      startY: y,
+      margin: { left: margin, right: margin, top: 120, bottom: 60 },
+      styles: {
+        font: 'helvetica',
+        fontSize: 9,
+        cellPadding: 8,
+        overflow: 'linebreak',
+        lineColor: [220, 229, 239],
+        lineWidth: 0.5,
+        textColor: [36, 52, 71],
+        valign: 'top'
+      },
+      headStyles: {
+        fillColor: [74, 144, 226], // --primary
+        textColor: 255,
+        fontStyle: 'bold',
+        fontSize: 10,
+        halign: 'left'
+      },
+      alternateRowStyles: { fillColor: [245, 249, 254] },
+      columnStyles: {
+        0: { cellWidth: (pageW - margin*2) * 0.42, fontStyle: 'bold', textColor: [23, 59, 99] },
+        1: { cellWidth: (pageW - margin*2) * 0.58 }
+      },
+      didDrawPage: (data) => {
+        // Footer on every page
+        const h = doc.internal.pageSize.getHeight();
+        const pageNum = doc.internal.getNumberOfPages();
+
+        doc.setDrawColor(220, 229, 239);
+        doc.setLineWidth(0.5);
+        doc.line(margin, h - 48, pageW - margin, h - 48);
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8);
+        doc.setTextColor(100, 116, 139);
+        doc.text('This receipt was generated by OVPSAS Forms.', margin, h - 32);
+        doc.text(`Page ${pageNum}`, pageW - margin, h - 32, { align: 'right' });
+        doc.setFontSize(7);
+        doc.text('Keep this document for your records.', margin, h - 20);
+      }
+    });
+
+    /* -------- Save -------- */
+    const safeTitle = (formData.title || 'response')
+      .replace(/[^a-z0-9]+/gi, '_').toLowerCase().slice(0, 40) || 'response';
+    const stamp = new Date().toISOString().slice(0,10);
+    doc.save(`${safeTitle}_${lastSubmission.responseId.slice(0,8)}_${stamp}.pdf`);
+    toast('PDF receipt downloaded');
+  } catch (err){
+    console.error(err);
+    toast('PDF generation failed: ' + err.message, 'error');
+  } finally {
+    $('#pdfLoading').classList.remove('show');
+    btn.disabled = false;
+    btn.innerHTML = origHTML;
   }
 }
 </script>
