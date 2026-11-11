@@ -1027,28 +1027,12 @@ function showSuccessScreen(){
     <button class="btn btn-accent" id="downloadPdfBtn">
       <i class="fa-solid fa-file-pdf"></i> Download Response (PDF)
     </button>
-    ${allowMultiple
-      ? `<button class="btn btn-ghost" id="submitAnotherBtn">
-           <i class="fa-solid fa-rotate"></i> Submit Another Response
-         </button>`
-      : ''}
   `;
 
   showState('success','fa-circle-check','Response Submitted', msg, actions);
 
   const pdfBtn = document.getElementById('downloadPdfBtn');
   if (pdfBtn) pdfBtn.addEventListener('click', () => downloadResponsePdf(pdfBtn));
-
-  const anotherBtn = document.getElementById('submitAnotherBtn');
-  if (anotherBtn){
-    anotherBtn.addEventListener('click', () => {
-      lastSubmission = null;
-      submitting = false;
-      // Reset form: go back to first entry section
-      renderForm();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
-  }
 }
 
 /* ================================================================
