@@ -569,7 +569,7 @@ input,select,textarea{font-family:inherit}
           </div>
           <div class="panel-body">
             <p style="font-size:.85rem;color:var(--text2);margin-bottom:14px;line-height:1.5">
-              Combine filters across multiple questions to analyze subgroups — e.g. all <b>Male</b> respondents who are also <b>Single Parent</b> students.
+              Combine filters across multiple questions to analyze subgroups — e.g. all <b>Male</b> respondents who are also <b>Single Parent</b> students. Then pick a <b>Breakdown by</b> question on a filter row to see how the matched group splits up on that question.
             </p>
             <div id="statFilterRows" style="display:flex;flex-direction:column;gap:10px"></div>
             <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
@@ -2313,15 +2313,30 @@ function statRenderFilterRows(){
   host.innerHTML = statFilterDefs.map((def, i) => {
     const q = qs.find(x => x.id === def.qid) || qs[0];
     const opts = statQuestionOptions(q);
-    return `<div class="stat-filter-row">
-      <select data-idx="${i}" data-role="q" style="flex:0 0 auto;min-width:160px">
+    const breakdownOpts = qs.map(qq =>
+      `<option value="${qq.id}" ${qq.id===def.breakdownQid?'selected':''}>${escapeHtml(qq.title||'Untitled')}</option>`
+    ).join('');
+
+    return `<div class="stat-filter-row" style="flex-wrap:wrap">
+      <select data-idx="${i}" data-role="q" style="flex:1;min-width:180px">
         ${qs.map(qq => `<option value="${qq.id}" ${qq.id===def.qid?'selected':''}>${escapeHtml(qq.title||'Untitled')}</option>`).join('')}
       </select>
-      <select data-idx="${i}" data-role="v" style="flex:1">
+      <span style="color:var(--text2);font-size:.8rem">=</span>
+      <select data-idx="${i}" data-role="v" style="flex:1;min-width:140px">
         <option value="">— any —</option>
         ${opts.map(o => `<option value="${escapeHtml(o)}" ${o===def.value?'selected':''}>${escapeHtml(o)}</option>`).join('')}
       </select>
       <button class="icon-btn danger" data-idx="${i}" data-role="rm" title="Remove"><i class="fa-solid fa-xmark"></i></button>
+
+      <div style="display:flex;gap:8px;align-items:center;width:100%;margin-top:6px;padding-left:2px">
+        <span style="font-size:.74rem;color:var(--text2);white-space:nowrap">
+          <i class="fa-solid fa-code-branch"></i> Breakdown by:
+        </span>
+        <select data-idx="${i}" data-role="breakdown" style="flex:1;padding:7px 10px;font-size:.82rem;border:1.5px solid var(--border);border-radius:7px;background:#fff;color:var(--text)">
+          <option value="">— none —</option>
+          ${breakdownOpts}
+        </select>
+      </div>
     </div>`;
   }).join('');
 
@@ -2337,6 +2352,12 @@ function statRenderFilterRows(){
     sel.addEventListener('change', e => {
       const i = +e.target.dataset.idx;
       statFilterDefs[i].value = e.target.value;
+    });
+  });
+  host.querySelectorAll('select[data-role="breakdown"]').forEach(sel => {
+    sel.addEventListener('change', e => {
+      const i = +e.target.dataset.idx;
+      statFilterDefs[i].breakdownQid = e.target.value || null;
     });
   });
   host.querySelectorAll('button[data-role="rm"]').forEach(btn => {
@@ -2371,6 +2392,11 @@ function statApplyFilters(){
     return `<span class="stat-answer-chip">${escapeHtml(q?.title||'Q')} = ${escapeHtml(d.value)}</span>`;
   }).join(' <i class="fa-solid fa-plus" style="font-size:.65rem;color:var(--text2)"></i> ');
 
+  // Only show breakdowns for questions the admin selected in the dropdowns
+  const breakdownQids = statFilterDefs
+    .map(d => d.breakdownQid)
+    .filter(Boolean);
+
   if (!matched.length){
     result.innerHTML = `<div class="stat-filter-result-card">
       <div class="stat-filter-result-head">
@@ -2382,16 +2408,16 @@ function statApplyFilters(){
     return;
   }
 
-  const filterQids = new Set(active.map(d => d.qid));
-  const otherQs = statGetFormQuestions(statCurrentFormId)
-    .filter(q => ['radio','checkbox','dropdown','scale'].includes(q.type))
-    .filter(q => !filterQids.has(q.id))
-    .slice(0, 2);
-
-  const breakdowns = otherQs.map(q => {
+  // Build breakdowns ONLY for explicitly-requested questions (deduplicated)
+  const seenBreakdown = new Set();
+  const breakdownBlocks = breakdownQids.map(qid => {
+    if (seenBreakdown.has(qid)) return '';
+    seenBreakdown.add(qid);
+    const q = qs.find(x => x.id === qid);
+    if (!q) return '';
     const counts = {};
     for (const r of matched){
-      const a = statGetAnswer(r, q.id);
+      const a = statGetAnswer(r, qid);
       if (a == null) continue;
       const arr = Array.isArray(a) ? a : [a];
       for (const v of arr){
@@ -2401,7 +2427,14 @@ function statApplyFilters(){
       }
     }
     const entries = Object.entries(counts).sort((a,b)=>b[1]-a[1]);
-    if (!entries.length) return '';
+    if (!entries.length){
+      return `<div style="margin-top:14px">
+        <div style="font-size:.82rem;font-weight:600;color:var(--dark-blue);margin-bottom:8px">
+          ${escapeHtml(q.title||'Question')} breakdown
+        </div>
+        <p style="font-size:.82rem;color:var(--text2)">No answers for this question in the matched set.</p>
+      </div>`;
+    }
     const max = Math.max(...entries.map(e=>e[1]));
     return `<div style="margin-top:14px">
       <div style="font-size:.82rem;font-weight:600;color:var(--dark-blue);margin-bottom:8px">
@@ -2429,7 +2462,7 @@ function statApplyFilters(){
         <div style="font-size:.74rem;color:var(--text2)">of ${statResponses.length} responses (${Math.round(matched.length/statResponses.length*100)}%)</div>
       </div>
     </div>
-    ${breakdowns || '<p style="font-size:.85rem;color:var(--text2)">Add more question types to see cross-tab breakdowns.</p>'}
+    ${breakdownBlocks || '<p style="font-size:.85rem;color:var(--text2)">Select a "Breakdown by" question on any filter row to see cross-tab results.</p>'}
   </div>`;
 }
 
