@@ -7,7 +7,6 @@
 <link rel="icon" href="https://wxyzofficial.sirv.com/SSU/ssu.jpg">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-<!-- PDF export (same CDN family used across the site) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <style>
@@ -32,80 +31,60 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .topbar .home-link:hover{background:var(--light-blue);color:var(--dark-blue)}
 main{flex:1;padding:34px 20px 60px}
 .container{max-width:760px;margin:0 auto}
-
-/* Form Card */
 .form-card{background:#fff;border-radius:20px;box-shadow:var(--shadow-lg);overflow:hidden;border:1px solid var(--border);margin-bottom:20px}
 .form-header{padding:34px 36px 26px;border-bottom:1px solid var(--border);position:relative}
 .form-header .accent-bar{position:absolute;top:0;left:0;right:0;height:6px;background:var(--primary)}
-
-/* Title & Description Paragraph Handling */
 .form-header h1{font-size:1.65rem;font-weight:800;color:var(--dark-blue);letter-spacing:-.02em;margin-bottom:10px;line-height:1.3}
-.form-header h1 p{margin:0 0 6px;}
-.form-header h1 p:last-child{margin-bottom:0;}
-.form-header h1 b, .form-header h1 strong {font-weight:800}
-.form-header h1 i, .form-header h1 em {font-style:italic}
-.form-header h1 u {text-decoration:underline}
-
+.form-header h1 p{margin:0 0 6px}
+.form-header h1 p:last-child{margin-bottom:0}
+.form-header h1 b,.form-header h1 strong{font-weight:800}
+.form-header h1 i,.form-header h1 em{font-style:italic}
+.form-header h1 u{text-decoration:underline}
 .form-header .desc{font-size:.96rem;color:var(--text2);line-height:1.6}
 .form-header .desc p{margin:0 0 8px}
 .form-header .desc p:last-child{margin-bottom:0}
-.form-header .desc b, .form-header .desc strong {font-weight:700; color:var(--dark-blue)}
-.form-header .desc i, .form-header .desc em {font-style:italic}
-.form-header .desc u {text-decoration:underline}
-
+.form-header .desc b,.form-header .desc strong{font-weight:700;color:var(--dark-blue)}
+.form-header .desc i,.form-header .desc em{font-style:italic}
+.form-header .desc u{text-decoration:underline}
 .form-header .header-img{margin-top:18px;border-radius:12px;overflow:hidden;max-height:280px}
 .form-header .header-img img{width:100%;height:100%;object-fit:cover;display:block}
-
-/* Sections */
 .section-block{display:none}
 .section-block.active{display:block;animation:fade .3s}
 @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .section-header{padding:24px 36px 20px;border-bottom:1px solid var(--border);background:linear-gradient(180deg,#f8fbff,#fff)}
-
-/* Section Title & Description Paragraph Handling */
 .section-header h2{font-size:1.15rem;font-weight:700;color:var(--dark-blue);margin-bottom:6px;line-height:1.4}
-.section-header h2 p{margin:0 0 6px;}
-.section-header h2 p:last-child{margin-bottom:0;}
-.section-header h2 b, .section-header h2 strong {font-weight:800}
-.section-header h2 i, .section-header h2 em {font-style:italic}
-.section-header h2 u {text-decoration:underline}
-
+.section-header h2 p{margin:0 0 6px}
+.section-header h2 p:last-child{margin-bottom:0}
+.section-header h2 b,.section-header h2 strong{font-weight:800}
+.section-header h2 i,.section-header h2 em{font-style:italic}
+.section-header h2 u{text-decoration:underline}
 .section-header .s-desc{font-size:.9rem;color:var(--text2);line-height:1.6}
 .section-header .s-desc p{margin:0 0 6px}
 .section-header .s-desc p:last-child{margin-bottom:0}
-.section-header .s-desc b, .section-header .s-desc strong {font-weight:700; color:var(--dark-blue)}
-.section-header .s-desc i, .section-header .s-desc em {font-style:italic}
-.section-header .s-desc u {text-decoration:underline}
-
+.section-header .s-desc b,.section-header .s-desc strong{font-weight:700;color:var(--dark-blue)}
+.section-header .s-desc i,.section-header .s-desc em{font-style:italic}
+.section-header .s-desc u{text-decoration:underline}
 .form-body{padding:24px 36px 34px}
-
-/* Questions */
 .question{padding:22px 0;border-bottom:1px solid var(--border);position:relative}
 .question:last-of-type{border-bottom:none}
-
-/* Question Title & Description Paragraph Handling */
 .q-title{font-size:1rem;font-weight:600;color:var(--dark-blue);margin-bottom:5px;line-height:1.5}
-.q-title p{margin:0 0 4px;}
-.q-title p:last-child{margin-bottom:0;}
-.q-title b, .q-title strong {font-weight:800}
-.q-title i, .q-title em {font-style:italic}
-.q-title u {text-decoration:underline}
+.q-title p{margin:0 0 4px}
+.q-title p:last-child{margin-bottom:0}
+.q-title b,.q-title strong{font-weight:800}
+.q-title i,.q-title em{font-style:italic}
+.q-title u{text-decoration:underline}
 .q-title .req{color:var(--error);margin-left:4px}
-
 .q-desc{font-size:.85rem;color:var(--text2);margin-bottom:12px;line-height:1.5}
 .q-desc p{margin:0 0 6px}
 .q-desc p:last-child{margin-bottom:0}
-.q-desc b, .q-desc strong {font-weight:700; color:var(--dark-blue)}
-.q-desc i, .q-desc em {font-style:italic}
-.q-desc u {text-decoration:underline}
-
+.q-desc b,.q-desc strong{font-weight:700;color:var(--dark-blue)}
+.q-desc i,.q-desc em{font-style:italic}
+.q-desc u{text-decoration:underline}
 .q-error{color:var(--error);font-size:.82rem;margin-top:7px;display:none;align-items:center;gap:6px}
 .q-error.show{display:flex}
-
-/* Inputs */
-input[type=text],input[type=number],input[type=email],input[type=tel],input[type=date],input[type=time],textarea,select{
-  width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:.95rem;font-family:inherit;color:var(--text);background:#fff;outline:none;transition:.2s}
+input[type=text],input[type=number],input[type=email],input[type=tel],input[type=date],input[type=time],textarea,select{width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:.95rem;font-family:inherit;color:var(--text);background:#fff;outline:none;transition:.2s}
 input:focus,textarea:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(74,144,226,.15)}
+input:disabled,select:disabled,textarea:disabled{background:#F5F9FE;color:#94a3b8;cursor:not-allowed;border-color:#e5eaf1}
 textarea{resize:vertical;min-height:100px;line-height:1.5}
 .choice{display:flex;align-items:flex-start;gap:11px;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;margin-bottom:8px;cursor:pointer;transition:.2s;font-size:.94rem}
 .choice:hover{border-color:var(--primary);background:var(--bg)}
@@ -117,8 +96,6 @@ textarea{resize:vertical;min-height:100px;line-height:1.5}
 .scale-opt:hover{border-color:var(--primary);color:var(--primary)}
 .scale-opt input{display:none}
 .scale-opt:has(input:checked){border-color:var(--primary);background:var(--light-blue);color:var(--primary)}
-
-/* Navigation & Submit */
 .nav-wrap{padding:24px 36px;border-top:1px solid var(--border);background:var(--bg);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;padding:12px 24px;border-radius:10px;font-weight:600;font-size:.95rem;transition:.2s}
 .btn-primary{background:var(--primary);color:#fff;box-shadow:0 6px 16px rgba(74,144,226,.3)}
@@ -134,8 +111,6 @@ textarea{resize:vertical;min-height:100px;line-height:1.5}
 .loading .spinner{display:block}
 .loading .btn-text{display:none}
 @keyframes spin{to{transform:rotate(360deg)}}
-
-/* Success / Error States */
 .state{background:#fff;border-radius:20px;padding:60px 40px;text-align:center;box-shadow:var(--shadow-lg);border:1px solid var(--border);max-width:520px;margin:0 auto}
 .state .icon{width:80px;height:80px;border-radius:50%;background:var(--light-blue);color:var(--primary);display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto 20px}
 .state.success .icon{background:#e3f5ea;color:var(--success)}
@@ -143,8 +118,6 @@ textarea{resize:vertical;min-height:100px;line-height:1.5}
 .state h2{font-size:1.35rem;color:var(--dark-blue);margin-bottom:10px}
 .state p{color:var(--text2);font-size:.95rem;margin-bottom:22px;line-height:1.6}
 .state .state-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
-
-/* Toast */
 .toast-wrap{position:fixed;bottom:24px;right:24px;display:flex;flex-direction:column;gap:10px;z-index:400}
 .toast{background:#fff;border-left:4px solid var(--primary);border-radius:10px;box-shadow:var(--shadow-lg);padding:14px 18px;display:flex;align-items:center;gap:12px;font-size:.9rem;min-width:260px;animation:slideIn .3s}
 .toast.success{border-left-color:var(--success)}
@@ -153,111 +126,43 @@ textarea{resize:vertical;min-height:100px;line-height:1.5}
 .toast.success i{color:var(--success)}
 .toast.error i{color:var(--error)}
 @keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
-
-/* ---------- Review Modal ---------- */
-.modal-overlay{
-  position:fixed;inset:0;background:rgba(23,59,99,.55);backdrop-filter:blur(3px);
-  display:none;align-items:center;justify-content:center;z-index:500;padding:20px;
-  animation:fade .2s;overflow-y:auto;
-}
+.modal-overlay{position:fixed;inset:0;background:rgba(23,59,99,.55);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;z-index:500;padding:20px;animation:fade .2s;overflow-y:auto}
 .modal-overlay.show{display:flex}
-.modal{
-  background:#fff;border-radius:20px;max-width:680px;width:100%;max-height:90vh;
-  box-shadow:var(--shadow-lg);display:flex;flex-direction:column;
-  animation:pop .25s;overflow:hidden;
-}
+.modal{background:#fff;border-radius:20px;max-width:680px;width:100%;max-height:90vh;box-shadow:var(--shadow-lg);display:flex;flex-direction:column;animation:pop .25s;overflow:hidden}
 @keyframes pop{from{transform:scale(.96);opacity:0}to{transform:scale(1);opacity:1}}
-.modal-head{
-  padding:20px 24px;border-bottom:1px solid var(--border);
-  display:flex;align-items:center;gap:12px;background:linear-gradient(180deg,#f8fbff,#fff);
-}
-.modal-head .m-icon{
-  width:44px;height:44px;border-radius:12px;background:var(--light-blue);
-  color:var(--primary);display:flex;align-items:center;justify-content:center;
-  font-size:1.1rem;flex-shrink:0;
-}
+.modal-head{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;background:linear-gradient(180deg,#f8fbff,#fff)}
+.modal-head .m-icon{width:44px;height:44px;border-radius:12px;background:var(--light-blue);color:var(--primary);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
 .modal-head .m-title{flex:1;min-width:0}
 .modal-head h3{font-size:1.05rem;color:var(--dark-blue);line-height:1.3}
 .modal-head p{font-size:.82rem;color:var(--text2);margin-top:2px}
-.modal-close{
-  width:34px;height:34px;border-radius:8px;color:var(--text2);
-  display:inline-flex;align-items:center;justify-content:center;
-}
+.modal-close{width:34px;height:34px;border-radius:8px;color:var(--text2);display:inline-flex;align-items:center;justify-content:center}
 .modal-close:hover{background:var(--bg);color:var(--dark-blue)}
 .modal-body{padding:20px 24px;overflow-y:auto;flex:1}
-.modal-foot{
-  padding:14px 24px;border-top:1px solid var(--border);background:var(--bg);
-  display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;
-}
+.modal-foot{padding:14px 24px;border-top:1px solid var(--border);background:var(--bg);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
 .modal-foot .foot-info{font-size:.8rem;color:var(--text2)}
 .modal-foot .foot-btns{display:flex;gap:8px;margin-left:auto;flex-wrap:wrap}
-
-.review-summary{
-  display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;
-}
-.review-pill{
-  display:inline-flex;align-items:center;gap:6px;
-  background:var(--light-blue);color:var(--dark-blue);
-  padding:6px 12px;border-radius:99px;font-size:.78rem;font-weight:600;
-}
+.review-summary{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.review-pill{display:inline-flex;align-items:center;gap:6px;background:var(--light-blue);color:var(--dark-blue);padding:6px 12px;border-radius:99px;font-size:.78rem;font-weight:600}
 .review-pill.success{background:#e3f5ea;color:var(--success)}
 .review-pill.error{background:#fde8ea;color:var(--error)}
-
-.review-section{
-  border:1px solid var(--border);border-radius:14px;
-  margin-bottom:14px;overflow:hidden;background:#fff;
-}
-.review-section .rs-head{
-  padding:12px 16px;background:var(--bg);border-bottom:1px solid var(--border);
-  display:flex;align-items:center;gap:10px;
-}
-.review-section .rs-head .rs-num{
-  width:24px;height:24px;border-radius:50%;background:var(--primary);color:#fff;
-  display:inline-flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;flex-shrink:0;
-}
-.review-section .rs-head .rs-title{
-  flex:1;font-size:.9rem;font-weight:700;color:var(--dark-blue);
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
-}
-.review-section .rs-head .rs-edit{
-  display:inline-flex;align-items:center;gap:5px;padding:5px 10px;
-  border-radius:8px;background:#fff;border:1px solid var(--border);
-  font-size:.76rem;font-weight:600;color:var(--primary);
-}
+.review-section{border:1px solid var(--border);border-radius:14px;margin-bottom:14px;overflow:hidden;background:#fff}
+.review-section .rs-head{padding:12px 16px;background:var(--bg);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.review-section .rs-head .rs-num{width:24px;height:24px;border-radius:50%;background:var(--primary);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;flex-shrink:0}
+.review-section .rs-head .rs-title{flex:1;font-size:.9rem;font-weight:700;color:var(--dark-blue);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.review-section .rs-head .rs-edit{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:8px;background:#fff;border:1px solid var(--border);font-size:.76rem;font-weight:600;color:var(--primary)}
 .review-section .rs-head .rs-edit:hover{border-color:var(--primary);background:var(--light-blue)}
-.review-row{
-  padding:11px 16px;border-bottom:1px dashed var(--border);
-  display:flex;flex-direction:column;gap:4px;
-}
+.review-row{padding:11px 16px;border-bottom:1px dashed var(--border);display:flex;flex-direction:column;gap:4px}
 .review-row:last-child{border-bottom:none}
-.review-row .rr-q{
-  font-size:.82rem;font-weight:600;color:var(--dark-blue);
-  display:flex;gap:6px;align-items:flex-start;flex-wrap:wrap;
-}
+.review-row .rr-q{font-size:.82rem;font-weight:600;color:var(--dark-blue);display:flex;gap:6px;align-items:flex-start;flex-wrap:wrap}
 .review-row .rr-q .req{color:var(--error)}
-.review-row .rr-a{
-  font-size:.88rem;color:var(--text);white-space:pre-wrap;word-break:break-word;line-height:1.5;
-}
+.review-row .rr-a{font-size:.88rem;color:var(--text);white-space:pre-wrap;word-break:break-word;line-height:1.5}
 .review-row .rr-a.empty{color:var(--text2);font-style:italic}
-.review-row .rr-actions{
-  margin-top:2px;
-}
-.review-row .rr-link{
-  font-size:.76rem;color:var(--primary);font-weight:600;
-  display:inline-flex;align-items:center;gap:5px;
-}
+.review-row .rr-actions{margin-top:2px}
+.review-row .rr-link{font-size:.76rem;color:var(--primary);font-weight:600;display:inline-flex;align-items:center;gap:5px}
 .review-row .rr-link:hover{text-decoration:underline}
-
-/* ---------- PDF loading pill ---------- */
-.pdf-loading{
-  position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
-  background:var(--dark-blue);color:#fff;padding:10px 20px;border-radius:99px;
-  font-size:.85rem;display:none;align-items:center;gap:10px;
-  box-shadow:var(--shadow-lg);z-index:600;
-}
+.pdf-loading{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--dark-blue);color:#fff;padding:10px 20px;border-radius:99px;font-size:.85rem;display:none;align-items:center;gap:10px;box-shadow:var(--shadow-lg);z-index:600}
 .pdf-loading.show{display:flex}
 .pdf-loading .spinner{display:block;border-top-color:#fff;border-color:rgba(255,255,255,.4)}
-
 @media(max-width:600px){
   .form-header{padding:26px 22px 20px}
   .section-header{padding:20px 22px}
@@ -295,7 +200,6 @@ textarea{resize:vertical;min-height:100px;line-height:1.5}
 
 <div class="toast-wrap" id="toastWrap"></div>
 
-<!-- Review modal -->
 <div class="modal-overlay" id="reviewOverlay">
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="reviewTitle">
     <div class="modal-head">
@@ -355,13 +259,10 @@ let formId = null;
 let anonUser = null;
 let currentSectionIndex = 0;
 let navigationHistory = [];
-let pendingAnswers = null;   // snapshot of answers taken when review opens
-let lastSubmission = null;   // { answers, responseId, submittedAt }
+let pendingAnswers = null;
+let lastSubmission = null;
 let submitting = false;
 
-/* The SSU + CHED logos are raster images on a third-party CDN. For the PDF
-   receipt we fetch them once and cache them as data URLs so jsPDF can embed
-   them without CORS retries. Failure is silent — the receipt still renders. */
 const PDF_LOGOS = {
   ssu: { url:'https://wxyzofficial.sirv.com/SSU/ssu.jpg',  data:null },
   ched:{ url:'https://wxyzofficial.sirv.com/SSU/ched.png', data:null }
@@ -410,7 +311,6 @@ function showState(type, icon, title, msg, actionHtml=''){
   </div>`;
 }
 
-/* --- URL id --- */
 const params = new URLSearchParams(window.location.search);
 formId = params.get('id');
 if (!formId){
@@ -418,7 +318,6 @@ if (!formId){
     `<a class="btn btn-primary" href="index.html"><i class="fa-solid fa-house"></i> Go to Homepage</a>`);
 }
 
-/* --- Auth --- */
 onAuthStateChanged(auth, async (user) => {
   if (!user){
     try { const cred = await signInAnonymously(auth); anonUser = cred.user; }
@@ -427,7 +326,6 @@ onAuthStateChanged(auth, async (user) => {
   if (formId) loadForm();
 });
 
-/* --- Load form --- */
 async function loadForm(){
   try {
     const ref = doc(db, 'forms', formId);
@@ -462,7 +360,6 @@ async function loadForm(){
   }
 }
 
-/* --- Sections --- */
 function getSections(){
   if (Array.isArray(formData.sections) && formData.sections.length) {
     return formData.sections;
@@ -470,7 +367,6 @@ function getSections(){
   return [{ id: 'sec_1', title: 'Form Questions', titleHtml: '', description: '', descriptionHtml: '', questions: formData.questions || [] }];
 }
 
-/* --- Render form --- */
 function renderForm(){
   const s = formData.settings || {};
   const theme = s.themeColor || '#4A90E2';
@@ -539,7 +435,9 @@ function renderForm(){
     (sec.questions || []).forEach((q, qi) => body.appendChild(renderQuestion(q, qi)));
   });
 
-  $('#responseForm').addEventListener('submit', (e) => e.preventDefault()); // handled explicitly
+  wireDependentDropdowns();
+
+  $('#responseForm').addEventListener('submit', (e) => e.preventDefault());
   $('#backBtn').addEventListener('click', prevSection);
   $('#nextBtn').addEventListener('click', () => nextSection(currentSectionIndex));
   updateNavBar();
@@ -564,7 +462,6 @@ function updateNavBar(){
   }
 }
 
-/* --- Validation --- */
 function validateSection(si){
   const secDiv = document.querySelector(`.section-block[data-section="${si}"]`);
   if (!secDiv) return { ok:true, firstError:null };
@@ -590,7 +487,8 @@ function validateSection(si){
     } else {
       const input = qDiv.querySelector('input,textarea,select');
       val = input ? input.value.trim() : '';
-      if (q.required && !val) missing = true;
+      const isDisabledChild = input && input.tagName === 'SELECT' && input.disabled;
+      if (q.required && !val && !isDisabledChild) missing = true;
       if (val && qtype === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)){
         missing = true; err.querySelector('span').textContent = 'Please enter a valid email address.';
       } else if (val && qtype === 'phone' && !/^[+0-9()\-\s]{7,20}$/.test(val)){
@@ -610,7 +508,6 @@ function validateSection(si){
   return { ok: !hasError, firstError: firstErr };
 }
 
-/* --- Branching --- */
 function getNextSectionIndex(currentSi){
   const sections = getSections();
   const currentSec = sections[currentSi];
@@ -685,7 +582,6 @@ function prevSection(){
   updateNavBar();
 }
 
-/* --- Question finder & renderer --- */
 function findQuestion(qid){
   const sections = getSections();
   for (const sec of sections) {
@@ -725,10 +621,19 @@ function renderQuestion(q, i){
       inputHtml = (q.options||[]).map(o => `<label class="choice">
         <input type="checkbox" name="${q.id}" value="${escapeHtml(o)}">
         <span>${escapeHtml(o)}</span></label>`).join(''); break;
-    case 'dropdown':
-      inputHtml = `<select name="${q.id}">
-        <option value="">Select an option</option>
-        ${(q.options||[]).map(o => `<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join('')}</select>`; break;
+    case 'dropdown': {
+      const isDependent = q.dependsOn && q.dependentOptions;
+      if (isDependent) {
+        inputHtml = `<select name="${q.id}" data-qid="${q.id}" data-depends-on="${escapeHtml(q.dependsOn)}" disabled>
+          <option value="">Select an option</option>
+        </select>`;
+      } else {
+        inputHtml = `<select name="${q.id}" data-qid="${q.id}">
+          <option value="">Select an option</option>
+          ${(q.options||[]).map(o => `<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join('')}</select>`;
+      }
+      break;
+    }
     case 'date': inputHtml = `<input type="date" name="${q.id}">`; break;
     case 'time': inputHtml = `<input type="time" name="${q.id}">`; break;
     case 'number': inputHtml = `<input type="number" name="${q.id}" placeholder="Enter a number">`; break;
@@ -760,7 +665,70 @@ function renderQuestion(q, i){
   return div;
 }
 
-/* --- Answer collection (only visited sections) --- */
+/* ================================================================
+   DEPENDENT (CASCADING) DROPDOWNS
+   ================================================================
+   A dropdown with `dependsOn` (parent question id) + `dependentOptions`
+   (parentValue -> [childOptions]) stays empty & disabled until its parent
+   has a value. Whenever the parent changes, the child is repopulated with
+   only the matching options and reset if its current selection is no
+   longer valid. Recursive: children of children are re-evaluated too. */
+function wireDependentDropdowns(){
+  const sections = getSections();
+  const allQs = sections.flatMap(s => s.questions || []);
+  const getQ = id => allQs.find(x => x.id === id);
+
+  function readValue(q){
+    const el = document.querySelector(`[name="${q.id}"]`);
+    if (!el) return '';
+    return el.value;
+  }
+
+  function refreshChild(childQ){
+    const parentQ = getQ(childQ.dependsOn);
+    if (!parentQ) return;
+    const childEl = document.querySelector(`select[data-depends-on="${childQ.dependsOn}"][name="${childQ.id}"]`);
+    if (!childEl) return;
+
+    const parentVal = readValue(parentQ);
+    const opts = (childQ.dependentOptions && childQ.dependentOptions[parentVal]) || [];
+    const previous = childEl.value;
+
+    childEl.innerHTML =
+      '<option value="">Select an option</option>' +
+      opts.map(o => `<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join('');
+
+    if (!parentVal || opts.length === 0){
+      childEl.disabled = true;
+      childEl.value = '';
+    } else {
+      childEl.disabled = false;
+      childEl.value = opts.includes(previous) ? previous : '';
+    }
+
+    allQs
+      .filter(x => x.dependsOn === childQ.id)
+      .forEach(grandChild => refreshChild(grandChild));
+  }
+
+  allQs.forEach(q => { if (q.dependsOn) refreshChild(q); });
+
+  const parentsWithDependents = new Set(
+    allQs.filter(q => q.dependsOn).map(q => q.dependsOn)
+  );
+
+  parentsWithDependents.forEach(parentId => {
+    const parentEl = document.querySelector(`[name="${parentId}"]`);
+    if (!parentEl) return;
+    const evt = parentEl.tagName === 'SELECT' || parentEl.type === 'radio' ? 'change' : 'input';
+    parentEl.addEventListener(evt, () => {
+      allQs
+        .filter(q => q.dependsOn === parentId)
+        .forEach(childQ => refreshChild(childQ));
+    });
+  });
+}
+
 function collectAnswers(visitedOnly = true){
   const answers = {};
   const sectionsToScan = visitedOnly ? navigationHistory : [...Array(getSections().length).keys()];
@@ -786,11 +754,7 @@ function collectAnswers(visitedOnly = true){
   return answers;
 }
 
-/* ================================================================
-   REVIEW MODAL
-   ================================================================ */
 function openReviewModal(){
-  // Validate all visited sections first
   for (const si of navigationHistory){
     const v = validateSection(si);
     if (!v.ok){
@@ -821,7 +785,6 @@ function buildReviewBody(){
   const body = $('#reviewBody');
   body.innerHTML = '';
 
-  // Summary pills
   let totalQ = 0, answeredQ = 0, requiredQ = 0, requiredAnswered = 0;
   sections.forEach((sec) => {
     if (!navigationHistory.includes(sections.indexOf(sec))) return;
@@ -845,7 +808,6 @@ function buildReviewBody(){
   `;
   body.appendChild(summary);
 
-  // Sections that the user actually visited
   let displayIdx = 0;
   sections.forEach((sec, si) => {
     if (!navigationHistory.includes(si)) return;
@@ -867,12 +829,10 @@ function buildReviewBody(){
     head.querySelector('.rs-title').textContent = secTitle;
     head.querySelector('.rs-edit').addEventListener('click', () => {
       closeReviewModal();
-      // Jump to that section
       document.querySelectorAll('.section-block').forEach(b => b.classList.remove('active'));
       const target = document.querySelector(`.section-block[data-section="${si}"]`);
       target.classList.add('active');
       currentSectionIndex = si;
-      // Keep navigation history coherent
       if (!navigationHistory.includes(si)) navigationHistory.push(si);
       updateNavBar();
       target.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -907,7 +867,6 @@ function buildReviewBody(){
         currentSectionIndex = si;
         if (!navigationHistory.includes(si)) navigationHistory.push(si);
         updateNavBar();
-        // Scroll & focus this specific question
         const qDiv = target.querySelector(`.question[data-qid="${q.id}"]`);
         if (qDiv){
           qDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -921,7 +880,6 @@ function buildReviewBody(){
     body.appendChild(secEl);
   });
 
-  // Footer info
   $('#reviewFootInfo').textContent = requiredAnswered < requiredQ
     ? `${requiredQ - requiredAnswered} required question${requiredQ-requiredAnswered!==1?'s':''} still unanswered`
     : 'All required questions are answered.';
@@ -943,7 +901,6 @@ function formatAnswerForDisplay(v, q){
   return String(v);
 }
 
-/* --- Review modal button wiring --- */
 $('#reviewCloseBtn').addEventListener('click', closeReviewModal);
 $('#reviewCancelBtn').addEventListener('click', closeReviewModal);
 $('#reviewOverlay').addEventListener('click', (e) => {
@@ -959,9 +916,6 @@ $('#reviewSubmitBtn').addEventListener('click', async () => {
   await submitResponse(pendingAnswers, btn);
 });
 
-/* ================================================================
-   SUBMIT
-   ================================================================ */
 async function submitResponse(answers, btnEl){
   if (submitting) return;
 
@@ -1015,9 +969,6 @@ async function submitResponse(answers, btnEl){
   }
 }
 
-/* ================================================================
-   SUCCESS SCREEN
-   ================================================================ */
 function showSuccessScreen(){
   const s = formData.settings || {};
   const allowMultiple = s.allowMultiple !== false;
@@ -1035,9 +986,6 @@ function showSuccessScreen(){
   if (pdfBtn) pdfBtn.addEventListener('click', () => downloadResponsePdf(pdfBtn));
 }
 
-/* ================================================================
-   PDF RECEIPT
-   ================================================================ */
 async function downloadResponsePdf(btnEl){
   if (!lastSubmission){ toast('Nothing to download', 'error'); return; }
 
@@ -1048,7 +996,6 @@ async function downloadResponsePdf(btnEl){
   $('#pdfLoading').classList.add('show');
 
   try {
-    // Load logos (cached after first success)
     await loadPdfLogos();
 
     const { jsPDF } = window.jspdf;
@@ -1058,14 +1005,11 @@ async function downloadResponsePdf(btnEl){
     const pageH = doc.internal.pageSize.getHeight();
     const margin = 40;
 
-    /* -------- Header band -------- */
-    doc.setFillColor(23, 59, 99); // dark blue
+    doc.setFillColor(23, 59, 99);
     doc.rect(0, 0, pageW, 96, 'F');
-    // Accent stripe
-    doc.setFillColor(255, 213, 79); // yellow
+    doc.setFillColor(255, 213, 79);
     doc.rect(0, 96, pageW, 6, 'F');
 
-    // Logos
     let logoX = margin;
     const logoSize = 52;
     try {
@@ -1074,7 +1018,6 @@ async function downloadResponsePdf(btnEl){
       if (PDF_LOGOS.ched.data) doc.addImage(PDF_LOGOS.ched.data, 'PNG',  logoX, 22, logoSize, logoSize);
     } catch(err){ console.warn('Logo embed skipped:', err.message); }
 
-    // Title block
     doc.setTextColor(255, 255, 255);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(11);
@@ -1086,7 +1029,6 @@ async function downloadResponsePdf(btnEl){
     doc.setTextColor(200, 219, 240);
     doc.text(`Generated: ${new Date().toLocaleString('en-PH')}`, pageW - margin, 62, { align: 'right' });
 
-    /* -------- Form title -------- */
     let y = 130;
     doc.setTextColor(23, 59, 99);
     doc.setFont('helvetica', 'bold');
@@ -1104,9 +1046,8 @@ async function downloadResponsePdf(btnEl){
       y += descLines.length * 13 + 8;
     }
 
-    /* -------- Meta box -------- */
     y += 4;
-    doc.setFillColor(245, 249, 254); // --bg
+    doc.setFillColor(245, 249, 254);
     doc.roundedRect(margin, y, pageW - margin*2, 64, 8, 8, 'F');
     doc.setTextColor(23, 59, 99);
     doc.setFont('helvetica', 'bold');
@@ -1134,7 +1075,6 @@ async function downloadResponsePdf(btnEl){
 
     y += 84;
 
-    /* -------- Answers table -------- */
     const rows = [];
     getSections().forEach((sec, si) => {
       if (!navigationHistory.includes(si)) return;
@@ -1164,7 +1104,7 @@ async function downloadResponsePdf(btnEl){
         valign: 'top'
       },
       headStyles: {
-        fillColor: [74, 144, 226], // --primary
+        fillColor: [74, 144, 226],
         textColor: 255,
         fontStyle: 'bold',
         fontSize: 10,
@@ -1176,7 +1116,6 @@ async function downloadResponsePdf(btnEl){
         1: { cellWidth: (pageW - margin*2) * 0.58 }
       },
       didDrawPage: (data) => {
-        // Footer on every page
         const h = doc.internal.pageSize.getHeight();
         const pageNum = doc.internal.getNumberOfPages();
 
@@ -1194,7 +1133,6 @@ async function downloadResponsePdf(btnEl){
       }
     });
 
-    /* -------- Save -------- */
     const safeTitle = (formData.title || 'response')
       .replace(/[^a-z0-9]+/gi, '_').toLowerCase().slice(0, 40) || 'response';
     const stamp = new Date().toISOString().slice(0,10);
