@@ -439,7 +439,7 @@ input,select,textarea{font-family:inherit}
         </div>
       </div>
 
-      <!-- My Forms -->
+            <!-- My Forms -->
       <div class="page" id="page-forms">
         <div class="panel">
           <div class="panel-head">
@@ -750,11 +750,9 @@ let editingFormId = null;
 let currentSections = [];
 let activeSectionId = null;
 
-/* ---------- Sign-out / auth guards ---------- */
 let loggingOut = false;
 let authNullTimer = null;
 
-/* ---------- Question types ---------- */
 const QUESTION_TYPES = [
   { type:'short',    label:'Short Answer',   icon:'fa-font' },
   { type:'paragraph',label:'Paragraph',      icon:'fa-align-left' },
@@ -769,7 +767,6 @@ const QUESTION_TYPES = [
   { type:'scale',    label:'Linear Scale',   icon:'fa-sliders' }
 ];
 
-/* ---------- Helpers ---------- */
 const $ = s => document.querySelector(s);
 const $$ = s => document.querySelectorAll(s);
 const uid = () => Math.random().toString(36).slice(2,10);
@@ -777,7 +774,6 @@ const uid = () => Math.random().toString(36).slice(2,10);
 function escapeHtml(s){
   const d = document.createElement('div'); d.textContent = s == null ? '' : String(s); return d.innerHTML;
 }
-
 function sanitizeHtml(html){
   if (!html) return '';
   const allowed = ['B','I','U','STRONG','EM','BR','P','DIV'];
@@ -807,7 +803,6 @@ function htmlToText(html){
   d.innerHTML = html || '';
   return (d.textContent || '').trim();
 }
-
 function fmtDate(ts){
   if (!ts) return '—';
   try {
@@ -821,7 +816,6 @@ function fmtDateShort(ts){
     return d.toLocaleDateString('en-PH', { year:'numeric', month:'short', day:'2-digit' }); }
   catch { return '—'; }
 }
-
 function toast(msg, type='success'){
   const el = document.createElement('div');
   el.className = 'toast ' + type;
@@ -830,7 +824,6 @@ function toast(msg, type='success'){
   $('#toastWrap').appendChild(el);
   setTimeout(() => el.remove(), 3500);
 }
-
 function openModal(title, bodyHTML, footHTML){
   $('#modalTitle').querySelector('span').textContent = title;
   $('#modalBody').innerHTML = bodyHTML;
@@ -871,7 +864,6 @@ function confirmDialog({title,msg,type='danger',okText='Confirm'}){
 function createRichEditor({ value='', placeholder='', multiline=false, onChange }){
   const wrap = document.createElement('div');
   wrap.className = 'rte-wrap';
-
   const toolbar = document.createElement('div');
   toolbar.className = 'rte-toolbar';
   toolbar.innerHTML = `
@@ -879,7 +871,6 @@ function createRichEditor({ value='', placeholder='', multiline=false, onChange 
     <button type="button" data-cmd="italic" title="Italic (Ctrl+I)"><i class="fa-solid fa-italic"></i></button>
     <button type="button" data-cmd="underline" title="Underline (Ctrl+U)"><i class="fa-solid fa-underline"></i></button>
   `;
-
   const input = document.createElement('div');
   input.className = 'rte-input';
   input.setAttribute('contenteditable','true');
@@ -888,7 +879,6 @@ function createRichEditor({ value='', placeholder='', multiline=false, onChange 
   input.dataset.placeholder = placeholder;
   if (multiline) input.dataset.multiline = 'true';
   input.innerHTML = sanitizeHtml(value || '');
-
   wrap.appendChild(toolbar);
   wrap.appendChild(input);
 
@@ -899,7 +889,6 @@ function createRichEditor({ value='', placeholder='', multiline=false, onChange 
       toolbar.querySelector('[data-cmd="underline"]').classList.toggle('on', document.queryCommandState('underline'));
     } catch(_){}
   };
-
   toolbar.querySelectorAll('button[data-cmd]').forEach(btn => {
     btn.addEventListener('mousedown', e => {
       e.preventDefault();
@@ -910,7 +899,6 @@ function createRichEditor({ value='', placeholder='', multiline=false, onChange 
       if (onChange) onChange(getHtml());
     });
   });
-
   input.addEventListener('keydown', e => {
     if ((e.ctrlKey || e.metaKey) && !e.shiftKey){
       const k = e.key.toLowerCase();
@@ -922,7 +910,6 @@ function createRichEditor({ value='', placeholder='', multiline=false, onChange 
       }
     }
   });
-
   const fire = () => {
     const sanitized = sanitizeHtml(input.innerHTML);
     if (sanitized !== input.innerHTML) input.innerHTML = sanitized;
@@ -932,11 +919,9 @@ function createRichEditor({ value='', placeholder='', multiline=false, onChange 
   input.addEventListener('blur', fire);
   input.addEventListener('keyup', refreshToolbar);
   input.addEventListener('mouseup', refreshToolbar);
-
   function getHtml(){ return sanitizeHtml(input.innerHTML); }
   function getText(){ return htmlToText(input.innerHTML); }
   function setHtml(html){ input.innerHTML = sanitizeHtml(html || ''); }
-
   return { el: wrap, input, getHtml, getText, setHtml };
 }
 
@@ -945,41 +930,27 @@ function applyAdminIdentity(){
   if (!currentUser) return;
   const a = currentUser;
   const docData = currentAdminDoc || {};
-
-  const displayName = docData.name
-    || docData.displayName
-    || a.displayName
+  const displayName = docData.name || docData.displayName || a.displayName
     || (a.email ? a.email.split('@')[0] : 'Administrator');
-
   const email = docData.email || a.email || '—';
   const role = docData.role || 'Administrator';
   const initial = (displayName || email || 'A').charAt(0).toUpperCase();
-
-  const emailEl = $('#userEmail');
-  if (emailEl) emailEl.textContent = email;
-  const avatarEl = $('#userAvatar');
-  if (avatarEl) avatarEl.textContent = initial;
-
+  const emailEl = $('#userEmail'); if (emailEl) emailEl.textContent = email;
+  const avatarEl = $('#userAvatar'); if (avatarEl) avatarEl.textContent = initial;
   const sName = $('#settingsName');     if (sName) sName.textContent = displayName;
   const sEmail = $('#settingsEmail');   if (sEmail) sEmail.textContent = email;
   const sAvatar = $('#settingsAvatar'); if (sAvatar) sAvatar.textContent = initial;
-
   const rolePill = document.querySelector('.settings-role');
   if (rolePill){
-    rolePill.innerHTML =
-      '<i class="fa-solid fa-shield-halved"></i> ' +
-      escapeHtml(role) + ' — full access';
+    rolePill.innerHTML = '<i class="fa-solid fa-shield-halved"></i> ' + escapeHtml(role) + ' — full access';
   }
-
   hydrateAccountInfo();
 }
 
 /* ---------- Auth ---------- */
 let authResolved = false;
-
 onAuthStateChanged(auth, async (user) => {
   if (loggingOut) return;
-
   if (!user && !authResolved) {
     if (authNullTimer) return;
     authNullTimer = setTimeout(() => {
@@ -988,47 +959,27 @@ onAuthStateChanged(auth, async (user) => {
     }, 8000);
     return;
   }
-
-  if (user && authNullTimer){
-    clearTimeout(authNullTimer);
-    authNullTimer = null;
-  }
-
+  if (user && authNullTimer){ clearTimeout(authNullTimer); authNullTimer = null; }
   if (!user) return;
   if (user.isAnonymous) { window.location.replace('login.html'); return; }
-
   let snap;
-  try {
-    snap = await getDoc(doc(db, 'admins', user.uid));
-  } catch (err) {
-    console.error('[AUTH] getDoc failed:', err);
-    showAuthError('Could not contact Firestore. Check your network and try again.', err);
-    return;
-  }
-
+  try { snap = await getDoc(doc(db, 'admins', user.uid)); }
+  catch (err) { console.error('[AUTH] getDoc failed:', err);
+    showAuthError('Could not contact Firestore. Check your network and try again.', err); return; }
   if (!snap.exists()){
     console.error('[AUTH] No /admins/' + user.uid + ' document.');
-    showAuthError(
-      'No administrator record was found for this account (UID ' + user.uid + '). ' +
-      'Create a document in the admins collection with this exact ID and active: true.',
-      null
-    );
+    showAuthError('No administrator record was found for this account (UID ' + user.uid + '). ' +
+      'Create a document in the admins collection with this exact ID and active: true.', null);
     return;
   }
-
   const data = snap.data() || {};
   if (data.active !== true){
     console.error('[AUTH] /admins/' + user.uid + ' has active =', data.active);
-    showAuthError(
-      'Your administrator record exists but is not active. Set active: true in /admins/' + user.uid + '.',
-      null
-    );
+    showAuthError('Your administrator record exists but is not active. Set active: true in /admins/' + user.uid + '.', null);
     return;
   }
-
   authResolved = true;
   if (authNullTimer){ clearTimeout(authNullTimer); authNullTimer = null; }
-
   currentUser = user;
   currentAdminDoc = data;
   applyAdminIdentity();
@@ -1038,30 +989,15 @@ onAuthStateChanged(auth, async (user) => {
 function showAuthError(message, errObj){
   const detail = errObj && errObj.message ? escapeHtml(errObj.message) : '';
   document.body.innerHTML = `
-    <div style="display:flex;align-items:center;justify-content:center;
-                min-height:100vh;font-family:Inter,system-ui,sans-serif;
-                background:#F5F9FE;color:#243447;padding:24px;text-align:center">
-      <div style="background:#fff;border:1px solid #DCE5EF;border-radius:16px;
-                  padding:40px;max-width:520px;box-shadow:0 12px 32px rgba(23,59,99,.12)">
-        <div style="font-size:2rem;color:#DC3545;margin-bottom:14px">
-          <i class="fa-solid fa-triangle-exclamation"></i>
-        </div>
+    <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:Inter,system-ui,sans-serif;background:#F5F9FE;color:#243447;padding:24px;text-align:center">
+      <div style="background:#fff;border:1px solid #DCE5EF;border-radius:16px;padding:40px;max-width:520px;box-shadow:0 12px 32px rgba(23,59,99,.12)">
+        <div style="font-size:2rem;color:#DC3545;margin-bottom:14px"><i class="fa-solid fa-triangle-exclamation"></i></div>
         <h2 style="color:#173B63;margin-bottom:8px">Could Not Verify Admin Access</h2>
-        <p style="color:#64748B;font-size:.92rem;margin-bottom:20px;line-height:1.6">
-          ${escapeHtml(message)}
-        </p>
+        <p style="color:#64748B;font-size:.92rem;margin-bottom:20px;line-height:1.6">${escapeHtml(message)}</p>
         ${detail ? `<p style="color:#94a3b8;font-size:.78rem;font-family:monospace;margin-bottom:20px">${detail}</p>` : ''}
         <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
-          <button onclick="location.reload()"
-                  style="background:#4A90E2;color:#fff;border:none;padding:11px 22px;
-                         border-radius:10px;font-weight:600;font-size:.9rem;cursor:pointer">
-            <i class="fa-solid fa-rotate"></i> Retry
-          </button>
-          <a href="login.html"
-             style="background:#fff;color:#173B63;border:1px solid #DCE5EF;padding:11px 22px;
-                    border-radius:10px;font-weight:600;font-size:.9rem;text-decoration:none">
-            Back to Login
-          </a>
+          <button onclick="location.reload()" style="background:#4A90E2;color:#fff;border:none;padding:11px 22px;border-radius:10px;font-weight:600;font-size:.9rem;cursor:pointer"><i class="fa-solid fa-rotate"></i> Retry</button>
+          <a href="login.html" style="background:#fff;color:#173B63;border:1px solid #DCE5EF;padding:11px 22px;border-radius:10px;font-weight:600;font-size:.9rem;text-decoration:none">Back to Login</a>
         </div>
       </div>
     </div>`;
@@ -1098,10 +1034,7 @@ window.switchPage = switchPage;
 $$('.sidebar nav button[data-page]').forEach(btn => {
   btn.addEventListener('click', () => {
     const page = btn.dataset.page;
-    if (page === 'create' && !editingFormId && !currentForm){
-      startNewForm();
-      return;
-    }
+    if (page === 'create' && !editingFormId && !currentForm){ startNewForm(); return; }
     switchPage(page);
   });
 });
@@ -1135,16 +1068,10 @@ function initTopEditors(){
   const titleHost = $('#fTitle');
   const descHost = $('#fDesc');
   if (!titleHost || !descHost) return;
-
   titleHost.innerHTML = '';
   descHost.innerHTML = '';
-
-  fTitleEditor = createRichEditor({
-    value: '', placeholder: 'e.g. Student Satisfaction Survey 2025', multiline: false
-  });
-  fDescEditor = createRichEditor({
-    value: '', placeholder: 'Brief description shown under the title', multiline: true
-  });
+  fTitleEditor = createRichEditor({ value: '', placeholder: 'e.g. Student Satisfaction Survey 2025', multiline: false });
+  fDescEditor = createRichEditor({ value: '', placeholder: 'Brief description shown under the title', multiline: true });
   titleHost.appendChild(fTitleEditor.el);
   descHost.appendChild(fDescEditor.el);
 }
@@ -1162,10 +1089,7 @@ async function loadForms(){
     renderResponsesList();
     renderSheetsList();
     populateStatFormSelect();
-  } catch (e) {
-    console.error(e);
-    toast('Failed to load forms. Check connection.', 'error');
-  }
+  } catch (e) { console.error(e); toast('Failed to load forms. Check connection.', 'error'); }
 }
 
 /* ---------- Overview ---------- */
@@ -1176,7 +1100,6 @@ function renderOverview(){
   $('#statResponses').textContent = totalResp;
   const open = forms.filter(f => f.status==='published' && f.settings?.acceptingResponses !== false).length;
   $('#statOpen').textContent = open;
-
   const recent = forms.slice(0,4);
   const rc = $('#recentForms');
   if (!recent.length){
@@ -1197,7 +1120,6 @@ function renderOverview(){
         </div>
       </div>`).join('');
   }
-
   const ra = $('#recentActivity');
   const withResp = forms.filter(f => (f.responseCount||0) > 0).slice(0,4);
   if (!withResp.length){
@@ -1261,16 +1183,13 @@ function renderResponsesList(){
     <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid var(--border);gap:12px;flex-wrap:wrap">
       <div style="min-width:0">
         <div style="font-weight:600;color:var(--dark-blue)">${escapeHtml(f.title||'Untitled')}</div>
-        <div style="font-size:.8rem;color:var(--text2);margin-top:4px">
-          <i class="fa-solid fa-inbox"></i> ${f.responseCount||0} responses · Updated ${fmtDateShort(f.updatedAt)}
-        </div>
+        <div style="font-size:.8rem;color:var(--text2);margin-top:4px"><i class="fa-solid fa-inbox"></i> ${f.responseCount||0} responses · Updated ${fmtDateShort(f.updatedAt)}</div>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <button class="btn btn-primary btn-sm" onclick="openSheets('${f.id}')"><i class="fa-solid fa-table"></i> View Responses</button>
       </div>
     </div>`).join('');
 }
-
 function renderSheetsList(){
   const c = $('#sheetsList');
   if (!forms.length){
@@ -1339,7 +1258,6 @@ function editForm(id){
     descriptionHtml: f.descriptionHtml || '',
     settings: f.settings || defaultSettings()
   };
-
   if (Array.isArray(f.sections) && f.sections.length){
     currentSections = JSON.parse(JSON.stringify(f.sections));
     currentSections.forEach(s => {
@@ -1349,18 +1267,13 @@ function editForm(id){
     });
   } else if (Array.isArray(f.questions) && f.questions.length){
     currentSections = [ {
-      id:'s_' + uid(),
-      title:'Section 1',
-      titleHtml:'',
-      description:'',
-      descriptionHtml:'',
+      id:'s_' + uid(), title:'Section 1', titleHtml:'', description:'', descriptionHtml:'',
       questions: JSON.parse(JSON.stringify(f.questions))
     } ];
   } else {
     currentSections = [ newSection('Section 1') ];
   }
   activeSectionId = currentSections[0].id;
-
   $('#builderTitle').textContent = 'Edit Form';
   initTopEditors();
   fTitleEditor.setHtml(currentForm.titleHtml || escapeHtml(currentForm.title));
@@ -1379,10 +1292,7 @@ function addSection(){
 window.addSection = addSection;
 
 function deleteSection(sid){
-  if (currentSections.length === 1){
-    toast('A form needs at least one section', 'error');
-    return;
-  }
+  if (currentSections.length === 1){ toast('A form needs at least one section', 'error'); return; }
   const s = currentSections.find(x => x.id === sid);
   const count = s?.questions?.length || 0;
   const msg = count
@@ -1428,7 +1338,9 @@ function addQuestion(type){
     options: (['radio','checkbox','dropdown'].includes(type)) ? ['Option 1','Option 2'] : [],
     scaleMin: 1, scaleMax: 5,
     scaleMinLabel:'', scaleMaxLabel:'',
-    branching: {}
+    branching: {},
+    dependsOn: null,
+    dependentOptions: {}
   };
   sec.questions.push(q);
   renderSections();
@@ -1445,7 +1357,6 @@ function findQuestion(qid){
   }
   return null;
 }
-
 function totalQuestions(){
   return currentSections.reduce((n,s) => n + s.questions.length, 0);
 }
@@ -1477,13 +1388,11 @@ function renderSections(){
   c.innerHTML = currentSections.map((s, si) => {
     const isActive = s.id === activeSectionId;
     const isTarget = targetSections[s.id];
-    
     let targetBadge = '';
     if (isTarget) {
       const uniqueSources = [...new Set(targetSections[s.id])];
       targetBadge = `<span class="section-badge logic" title="Only shown if respondent selects specific answers on: ${escapeHtml(uniqueSources.join(', '))}"><i class="fa-solid fa-code-branch"></i> Conditional Target</span>`;
     }
-
     const questionsHtml = s.questions.length
       ? s.questions.map((q, qi) => renderQuestionCard(q, qi, si)).join('')
       : '';
@@ -1518,14 +1427,9 @@ function renderSections(){
       value: sec.titleHtml || escapeHtml(sec.title),
       placeholder: 'Section title',
       multiline: false,
-      onChange: html => {
-        sec.titleHtml = html;
-        sec.title = htmlToText(html);
-      }
+      onChange: html => { sec.titleHtml = html; sec.title = htmlToText(html); }
     });
-    ed.el.addEventListener('focusin', () => {
-      if (activeSectionId !== sid) setActiveSection(sid);
-    });
+    ed.el.addEventListener('focusin', () => { if (activeSectionId !== sid) setActiveSection(sid); });
     host.appendChild(ed.el);
   });
   c.querySelectorAll('.s-desc-host').forEach(host => {
@@ -1536,20 +1440,15 @@ function renderSections(){
       value: sec.descriptionHtml || escapeHtml(sec.description),
       placeholder: 'Section description (optional)',
       multiline: true,
-      onChange: html => {
-        sec.descriptionHtml = html;
-        sec.description = htmlToText(html);
-      }
+      onChange: html => { sec.descriptionHtml = html; sec.description = htmlToText(html); }
     });
     host.appendChild(ed.el);
   });
-
   c.querySelectorAll('.q-block').forEach(block => {
     const qid = block.dataset.qid;
     const found = findQuestion(qid);
     if (!found) return;
     const q = found.question;
-
     const titleHost = block.querySelector('.q-title-host');
     const descHost = block.querySelector('.q-desc-host');
     if (titleHost){
@@ -1557,10 +1456,7 @@ function renderSections(){
         value: q.titleHtml || escapeHtml(q.title),
         placeholder: 'Question title',
         multiline: false,
-        onChange: html => {
-          q.titleHtml = html;
-          q.title = htmlToText(html);
-        }
+        onChange: html => { q.titleHtml = html; q.title = htmlToText(html); }
       });
       titleHost.appendChild(ed.el);
     }
@@ -1569,15 +1465,11 @@ function renderSections(){
         value: q.descriptionHtml || escapeHtml(q.description),
         placeholder: 'Question description (optional)',
         multiline: true,
-        onChange: html => {
-          q.descriptionHtml = html;
-          q.description = htmlToText(html);
-        }
+        onChange: html => { q.descriptionHtml = html; q.description = htmlToText(html); }
       });
       descHost.appendChild(ed.el);
     }
   });
-
   c.querySelectorAll('.req-toggle').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.preventDefault();
@@ -1588,7 +1480,6 @@ function renderSections(){
       renderSections();
     });
   });
-
   c.querySelectorAll('.q-move-select').forEach(sel => {
     sel.addEventListener('change', (e) => {
       const qid = e.target.dataset.qid;
@@ -1614,7 +1505,6 @@ function renderQuestionCard(q, qi, sectionIndex){
   } else if (q.type === 'scale'){
     preview = `<div class="q-opts">Scale: ${q.scaleMin} to ${q.scaleMax} ${q.scaleMinLabel?'('+escapeHtml(q.scaleMinLabel)+' → '+escapeHtml(q.scaleMaxLabel)+')':''}</div>`;
   }
-
   const sectionOpts = currentSections.map(s => {
     const isCurrent = s.questions.some(x => x.id === q.id);
     return `<option value="${s.id}" ${isCurrent?'disabled':''}>${escapeHtml(s.title||'Untitled')}</option>`;
@@ -1622,6 +1512,8 @@ function renderQuestionCard(q, qi, sectionIndex){
 
   const hasBranching = q.branching && Object.keys(q.branching).length > 0;
   const branchBadge = hasBranching ? `<span class="qtype" style="background:var(--soft-yellow);color:#b8860b"><i class="fa-solid fa-code-branch"></i> Branching</span>` : '';
+  const isDependent = q.type === 'dropdown' && q.dependsOn;
+  const depBadge = isDependent ? `<span class="qtype" style="background:#e6f4ea;color:#137333"><i class="fa-solid fa-link"></i> Dependent</span>` : '';
 
   return `<div class="q-block" data-qid="${q.id}">
     <div class="qh">
@@ -1630,6 +1522,7 @@ function renderQuestionCard(q, qi, sectionIndex){
         <div style="margin-top:4px">
           <span class="qtype"><i class="fa-solid ${meta.icon}"></i> ${meta.label}</span>
           ${branchBadge}
+          ${depBadge}
           <button class="req-toggle ${q.required?'on':''}" data-qid="${q.id}" type="button" title="Toggle required">
             <i class="fa-solid ${q.required?'fa-circle-check':'fa-circle'}"></i>
             ${q.required?'Required':'Optional'}
@@ -1673,9 +1566,8 @@ function duplicateQuestion(qid){
   const copy = JSON.parse(JSON.stringify(question));
   copy.id = 'q_' + uid();
   copy.title = (copy.title || 'Untitled') + ' (copy)';
-  if (copy.titleHtml){
-    copy.titleHtml = copy.titleHtml + ' <i>(copy)</i>';
-  }
+  if (copy.titleHtml) copy.titleHtml = copy.titleHtml + ' <i>(copy)</i>';
+  if (copy.dependsOn) copy.dependsOn = null;
   section.questions.splice(i+1, 0, copy);
   renderSections();
 }
@@ -1713,7 +1605,7 @@ function editQuestion(qid){
     }</div>
     <button class="btn btn-ghost btn-sm" onclick="addOption()" type="button"><i class="fa-solid fa-plus"></i> Add Option</button></div>`;
   }
-  
+
   let scaleHtml = '';
   if (isScale){
     scaleHtml = `
@@ -1731,7 +1623,6 @@ function editQuestion(qid){
       if (s.id === found.section.id) return '';
       return `<option value="${s.id}">${escapeHtml(s.title || 'Section ' + (i+1))}</option>`;
     }).join('');
-
     const branchRules = q.branching || {};
     const ruleRows = (q.options || []).map(opt => {
       const target = branchRules[opt] || '';
@@ -1744,7 +1635,6 @@ function editQuestion(qid){
         </select>
       </div>`;
     }).join('');
-
     branchingHtml = `<div class="field" style="margin-top:16px;background:var(--bg);padding:14px;border-radius:10px;border:1px solid var(--border)">
       <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:12px">
         <input type="checkbox" id="qEnableBranching" ${Object.keys(branchRules).length ? 'checked' : ''} style="width:16px;height:16px;accent-color:var(--primary)">
@@ -1757,6 +1647,77 @@ function editQuestion(qid){
     </div>`;
   }
 
+  /* ---------- DEPENDENT DROPDOWN CONFIG ---------- */
+  let dependentHtml = '';
+  if (q.type === 'dropdown') {
+    const allQs = currentSections.flatMap(s => s.questions);
+    const parentCandidates = allQs.filter(other =>
+      other.id !== q.id &&
+      ['dropdown','radio'].includes(other.type) &&
+      (other.options||[]).length
+    );
+
+    if (parentCandidates.length) {
+      const parentSelOpts = parentCandidates.map(p =>
+        `<option value="${p.id}" ${q.dependsOn===p.id?'selected':''}>${escapeHtml(p.title||'Untitled')}</option>`
+      ).join('');
+
+      const selectedParent = parentCandidates.find(p => p.id === q.dependsOn);
+      const mappingRows = selectedParent
+        ? (selectedParent.options||[]).map(parentOpt => {
+            const childVals = (q.dependentOptions && q.dependentOptions[parentOpt]) || [];
+            return `<div class="dep-map-row" data-parent-opt="${escapeHtml(parentOpt)}"
+                       style="display:flex;gap:8px;align-items:flex-start;margin-bottom:8px">
+              <span style="flex:0 0 130px;font-size:.8rem;color:var(--text2);padding-top:8px;word-break:break-word">
+                If "${escapeHtml(parentOpt)}"
+              </span>
+              <i class="fa-solid fa-arrow-right" style="color:var(--text2);font-size:.75rem;padding-top:10px"></i>
+              <textarea class="dep-map-input" data-parent-opt="${escapeHtml(parentOpt)}"
+                        placeholder="Comma-separated: BSIT, BSCS, BSED"
+                        style="flex:1;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;
+                               font-size:.82rem;outline:none;resize:vertical;min-height:38px;font-family:inherit"
+              >${escapeHtml(childVals.join(', '))}</textarea>
+            </div>`;
+          }).join('')
+        : '<p style="font-size:.8rem;color:var(--text2)">Select a parent question above to configure its child options.</p>';
+
+      dependentHtml = `
+        <div class="field" style="margin-top:16px;background:#f0f7ff;padding:14px;border-radius:10px;border:1px solid var(--border)">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:12px">
+            <input type="checkbox" id="qEnableDependent" ${q.dependsOn?'checked':''}
+                   style="width:16px;height:16px;accent-color:var(--primary)">
+            <span style="font-weight:600;color:var(--dark-blue);font-size:.9rem">
+              <i class="fa-solid fa-link"></i> Dependent Dropdown (Cascading)
+            </span>
+          </label>
+          <div id="dependentWrap" style="display:${q.dependsOn?'block':'none'}">
+            <div class="field" style="margin-bottom:10px">
+              <label style="font-size:.8rem;margin-bottom:4px">Parent Question</label>
+              <select id="depParentSelect"
+                      style="width:100%;padding:8px 10px;border:1.5px solid var(--border);
+                             border-radius:8px;font-size:.85rem;outline:none;background:#fff">
+                <option value="">— Choose a parent —</option>
+                ${parentSelOpts}
+              </select>
+            </div>
+            <div id="depMappingWrap">${mappingRows}</div>
+            <p style="font-size:.74rem;color:var(--text2);margin-top:6px;line-height:1.5">
+              <i class="fa-solid fa-circle-info"></i>
+              The child options shown to respondents depend on what they pick for the parent question.
+            </p>
+          </div>
+        </div>`;
+    } else {
+      dependentHtml = `
+        <div class="field" style="margin-top:16px;background:var(--bg);padding:12px;border-radius:10px;border:1px dashed var(--border)">
+          <p style="font-size:.8rem;color:var(--text2)">
+            <i class="fa-solid fa-circle-info"></i>
+            To use a dependent dropdown, add another <b>Dropdown</b> or <b>Multiple Choice</b> question first (e.g. "Campus").
+          </p>
+        </div>`;
+    }
+  }
+
   openModal(`Advanced Options · ${meta.label}`,
     `<p style="font-size:.85rem;color:var(--text2);margin-bottom:14px">
       The question title and description are edited directly on the card.
@@ -1766,20 +1727,15 @@ function editQuestion(qid){
      <div class="field" style="margin-top:6px">
        <label class="switch"><input type="checkbox" id="qReq" ${q.required?'checked':''}><span class="track"></span><span>Required question</span></label>
      </div>
-     ${branchingHtml}`,
+     ${branchingHtml}
+     ${dependentHtml}`,
     `<button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
      <button class="btn btn-primary" id="qSaveBtn"><i class="fa-solid fa-check"></i> Save</button>`
   );
 
   window.__tempOptions = [...(q.options||[])];
-  window.addOption = () => {
-    window.__tempOptions.push('Option ' + (window.__tempOptions.length+1));
-    refreshOptList();
-  };
-  window.removeOption = (i) => {
-    window.__tempOptions.splice(i,1);
-    refreshOptList();
-  };
+  window.addOption = () => { window.__tempOptions.push('Option ' + (window.__tempOptions.length+1)); refreshOptList(); };
+  window.removeOption = (i) => { window.__tempOptions.splice(i,1); refreshOptList(); };
   function refreshOptList(){
     const list = document.getElementById('optList');
     if (!list) return;
@@ -1789,9 +1745,7 @@ function editQuestion(qid){
         <button class="icon-btn danger" onclick="removeOption(${i})" type="button"><i class="fa-solid fa-xmark"></i></button>
       </div>`).join('');
     list.querySelectorAll('input[data-opt]').forEach(inp => {
-      inp.addEventListener('input', e => {
-        window.__tempOptions[+e.target.dataset.opt] = e.target.value;
-      });
+      inp.addEventListener('input', e => { window.__tempOptions[+e.target.dataset.opt] = e.target.value; });
     });
   }
   refreshOptList();
@@ -1804,10 +1758,62 @@ function editQuestion(qid){
     });
   }
 
+  /* ---------- Dependent dropdown wiring ---------- */
+  const enableDep = document.getElementById('qEnableDependent');
+  const depWrap   = document.getElementById('dependentWrap');
+  const depParent = document.getElementById('depParentSelect');
+
+  function rebuildDepMapping(){
+    const mappingHost = document.getElementById('depMappingWrap');
+    if (!mappingHost) return;
+    const pid = depParent ? depParent.value : '';
+    if (!pid) {
+      mappingHost.innerHTML = '<p style="font-size:.8rem;color:var(--text2)">Select a parent question above to configure its child options.</p>';
+      return;
+    }
+    const parentQ = currentSections.flatMap(s => s.questions).find(x => x.id === pid);
+    if (!parentQ) return;
+
+    const existingMap = {};
+    mappingHost.querySelectorAll('.dep-map-input').forEach(ta => {
+      existingMap[ta.dataset.parentOpt] = ta.value;
+    });
+
+    mappingHost.innerHTML = (parentQ.options || []).map(parentOpt => {
+      const val = existingMap[parentOpt] ?? ((q.dependentOptions && q.dependentOptions[parentOpt]) || []).join(', ');
+      return `<div class="dep-map-row" data-parent-opt="${escapeHtml(parentOpt)}"
+                   style="display:flex;gap:8px;align-items:flex-start;margin-bottom:8px">
+        <span style="flex:0 0 130px;font-size:.8rem;color:var(--text2);padding-top:8px;word-break:break-word">
+          If "${escapeHtml(parentOpt)}"
+        </span>
+        <i class="fa-solid fa-arrow-right" style="color:var(--text2);font-size:.75rem;padding-top:10px"></i>
+        <textarea class="dep-map-input" data-parent-opt="${escapeHtml(parentOpt)}"
+                  placeholder="Comma-separated: BSIT, BSCS, BSED"
+                  style="flex:1;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;
+                         font-size:.82rem;outline:none;resize:vertical;min-height:38px;font-family:inherit"
+        >${escapeHtml(val)}</textarea>
+      </div>`;
+    }).join('');
+  }
+
+  if (enableDep) {
+    enableDep.addEventListener('change', () => {
+      depWrap.style.display = enableDep.checked ? 'block' : 'none';
+      if (enableDep.checked && depParent && !depParent.value && depParent.options.length > 1) {
+        depParent.selectedIndex = 1;
+        rebuildDepMapping();
+      }
+    });
+  }
+  if (depParent) depParent.addEventListener('change', rebuildDepMapping);
+
   document.getElementById('qSaveBtn').addEventListener('click', () => {
     q.required = document.getElementById('qReq').checked;
-    if (['radio','checkbox','dropdown'].includes(q.type)) q.options = window.__tempOptions.filter(o => o.trim());
-    
+
+    if (['radio','checkbox','dropdown'].includes(q.type)) {
+      q.options = window.__tempOptions.filter(o => o.trim());
+    }
+
     if (hasOpts) {
       const isEnabled = document.getElementById('qEnableBranching')?.checked;
       q.branching = {};
@@ -1824,6 +1830,28 @@ function editQuestion(qid){
       q.scaleMinLabel = document.getElementById('qScaleMinLbl').value.trim();
       q.scaleMaxLabel = document.getElementById('qScaleMaxLbl').value.trim();
     }
+
+    /* ---------- Save dependent config ---------- */
+    if (q.type === 'dropdown') {
+      const depEnabled = document.getElementById('qEnableDependent')?.checked;
+      if (depEnabled) {
+        q.dependsOn = document.getElementById('depParentSelect')?.value || null;
+        q.dependentOptions = {};
+        document.querySelectorAll('.dep-map-input').forEach(ta => {
+          const opt = ta.dataset.parentOpt;
+          const childs = ta.value.split(',').map(s => s.trim()).filter(Boolean);
+          if (childs.length) q.dependentOptions[opt] = childs;
+        });
+        // union of all child options for fallback / statistics
+        const union = new Set();
+        Object.values(q.dependentOptions).forEach(arr => arr.forEach(v => union.add(v)));
+        if (union.size) q.options = [...union];
+      } else {
+        q.dependsOn = null;
+        q.dependentOptions = {};
+      }
+    }
+
     closeModal();
     renderSections();
     toast('Options saved', 'success');
@@ -1834,36 +1862,23 @@ window.editQuestion = editQuestion;
 /* ---------- Save Form ---------- */
 async function saveForm(publish){
   if (!currentForm){
-    currentForm = {
-      title: '', titleHtml: '',
-      description: '', descriptionHtml: '',
-      settings: defaultSettings()
-    };
+    currentForm = { title:'', titleHtml:'', description:'', descriptionHtml:'', settings: defaultSettings() };
   }
-  if (!currentForm.settings){
-    currentForm.settings = defaultSettings();
-  }
-
+  if (!currentForm.settings) currentForm.settings = defaultSettings();
   if (!Array.isArray(currentSections) || !currentSections.length){
     currentSections = [ newSection('Section 1') ];
     activeSectionId = currentSections[0].id;
     renderSections();
   }
-
-  if (!fTitleEditor || !fDescEditor){
-    initTopEditors();
-  }
-
+  if (!fTitleEditor || !fDescEditor) initTopEditors();
   if (!currentUser || !currentUser.uid){
     toast('Your session is not ready. Please wait a moment and try again.', 'error');
     return;
   }
-
   const titleHtml = fTitleEditor?.getHtml() || '';
   const descHtml  = fDescEditor?.getHtml()  || '';
   const titleText = htmlToText(titleHtml);
   const descText  = htmlToText(descHtml);
-
   if (!titleText){ toast('Please enter a form title', 'error'); return; }
   if (totalQuestions() === 0){ toast('Add at least one question', 'error'); return; }
 
@@ -1875,19 +1890,14 @@ async function saveForm(publish){
   });
   for (const s of currentSections){
     for (const q of s.questions){
-      if (!q.title || !q.title.trim()){
-        toast('All questions need a title', 'error');
-        return;
-      }
+      if (!q.title || !q.title.trim()){ toast('All questions need a title', 'error'); return; }
     }
   }
 
   const payload = {
     ownerUid: currentUser.uid,
-    title: titleText,
-    titleHtml: titleHtml,
-    description: descText,
-    descriptionHtml: descHtml,
+    title: titleText, titleHtml: titleHtml,
+    description: descText, descriptionHtml: descHtml,
     sections: currentSections,
     questions: currentSections.flatMap(s => s.questions),
     settings: currentForm.settings,
@@ -1910,10 +1920,7 @@ async function saveForm(publish){
     }
     await loadForms();
     setTimeout(() => switchPage('forms'), 500);
-  } catch (e) {
-    console.error(e);
-    toast('Failed to save form: ' + e.message, 'error');
-  }
+  } catch (e) { console.error(e); toast('Failed to save form: ' + e.message, 'error'); }
 }
 window.saveForm = saveForm;
 
@@ -1922,15 +1929,12 @@ function previewForm(){
   const sectionsHtml = currentSections.map((s, si) => {
     const qs = s.questions.map((q, qi) => renderPreviewQuestion(q, qi)).join('');
     return `<div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:14px">
-      <div style="font-size:.72rem;color:var(--primary);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">
-        Section ${si+1}
-      </div>
+      <div style="font-size:.72rem;color:var(--primary);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Section ${si+1}</div>
       <div style="font-weight:700;color:var(--dark-blue);font-size:1rem;margin-bottom:4px">${s.titleHtml || escapeHtml(s.title||'Untitled Section')}</div>
       ${s.descriptionHtml ? `<div style="font-size:.85rem;color:var(--text2);margin-bottom:10px">${s.descriptionHtml}</div>` : (s.description ? `<div style="font-size:.85rem;color:var(--text2);margin-bottom:10px">${escapeHtml(s.description)}</div>` : '')}
       ${qs}
     </div>`;
   }).join('');
-
   openModal('Form Preview · ' + (htmlToText(fTitleEditor?.getHtml() || '') || 'Untitled'),
     `<div style="background:var(--bg);padding:18px;border-radius:12px">
       <h2 style="color:var(--dark-blue);font-size:1.2rem;margin-bottom:6px">${fTitleEditor?.getHtml() || 'Untitled Form'}</h2>
@@ -1948,19 +1952,15 @@ function previewFormById(id){
   const sections = Array.isArray(f.sections) && f.sections.length
     ? f.sections
     : [{ title:'Section 1', titleHtml:'', description:'', descriptionHtml:'', questions: f.questions || [] }];
-
   const sectionsHtml = sections.map((s, si) => {
     const qs = (s.questions||[]).map((q, qi) => renderPreviewQuestion(q, qi)).join('');
     return `<div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:14px">
-      <div style="font-size:.72rem;color:var(--primary);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">
-        Section ${si+1}
-      </div>
+      <div style="font-size:.72rem;color:var(--primary);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Section ${si+1}</div>
       <div style="font-weight:700;color:var(--dark-blue);font-size:1rem;margin-bottom:4px">${s.titleHtml || escapeHtml(s.title||'Untitled Section')}</div>
       ${s.descriptionHtml ? `<div style="font-size:.85rem;color:var(--text2);margin-bottom:10px">${s.descriptionHtml}</div>` : (s.description ? `<div style="font-size:.85rem;color:var(--text2);margin-bottom:10px">${escapeHtml(s.description)}</div>` : '')}
       ${qs}
     </div>`;
   }).join('');
-
   openModal('Form Preview · ' + (f.title||'Untitled'),
     `<div style="background:var(--bg);padding:18px;border-radius:12px">
       <h2 style="color:var(--dark-blue);font-size:1.2rem;margin-bottom:6px">${f.titleHtml || escapeHtml(f.title||'Untitled')}</h2>
@@ -2074,21 +2074,14 @@ async function duplicateForm(id){
     const sections = Array.isArray(f.sections) && f.sections.length
       ? JSON.parse(JSON.stringify(f.sections))
       : [{ id:'s_' + uid(), title:'Section 1', titleHtml:'', description:'', descriptionHtml:'', questions: JSON.parse(JSON.stringify(f.questions || [])) }];
-
     const copy = {
       ownerUid: currentUser.uid,
       title: (f.title||'Untitled') + ' (Copy)',
       titleHtml: f.titleHtml || escapeHtml(f.title||'Untitled'),
-      description: f.description || '',
-      descriptionHtml: f.descriptionHtml || '',
-      sections,
-      questions: sections.flatMap(s => s.questions),
-      settings: f.settings || {},
-      status: 'draft',
-      responseCount: 0,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-      publishedAt: null
+      description: f.description || '', descriptionHtml: f.descriptionHtml || '',
+      sections, questions: sections.flatMap(s => s.questions),
+      settings: f.settings || {}, status: 'draft', responseCount: 0,
+      createdAt: serverTimestamp(), updatedAt: serverTimestamp(), publishedAt: null
     };
     await addDoc(collection(db, 'forms'), copy);
     toast('Form duplicated', 'success');
@@ -2103,11 +2096,8 @@ async function deleteForm(id){
   if (!f) return;
   const ok = await confirmDialog({title:'Delete Form', msg:`Delete "${f.title}"? This will permanently remove the form. Responses in the subcollection may remain unless manually cleaned. Continue?`, type:'danger', okText:'Delete'});
   if (!ok) return;
-  try {
-    await deleteDoc(doc(db, 'forms', id));
-    toast('Form deleted', 'success');
-    loadForms();
-  } catch(e){ toast('Failed: ' + e.message, 'error'); }
+  try { await deleteDoc(doc(db, 'forms', id)); toast('Form deleted', 'success'); loadForms(); }
+  catch(e){ toast('Failed: ' + e.message, 'error'); }
 }
 window.deleteForm = deleteForm;
 
@@ -2132,7 +2122,6 @@ function statGetFormQuestions(formId){
   }
   return f.questions || [];
 }
-
 function populateStatFormSelect(){
   const sel = $('#statFormSelect');
   if (!sel) return;
@@ -2147,463 +2136,284 @@ async function loadStatResponses(formId){
   statResponses = [];
   if (!formId) return;
   try {
-    const q = query(collection(db, 'forms', formId, 'responses'), orderBy('submittedAt','desc'), limit(5000));
+    const q = query(collection(db, 'forms', formId, 'responses'));
     const snap = await getDocs(q);
-    statResponses = snap.docs.map(d => ({ id:d.id, ...d.data() }));
-  } catch (e){
+    statResponses = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch (e) {
     console.error('[STAT] Failed to load responses:', e);
-    try {
-      const snap2 = await getDocs(collection(db, 'forms', formId, 'responses'));
-      statResponses = snap2.docs.map(d => ({ id:d.id, ...d.data() }));
-    } catch(e2){ console.error(e2); toast('Could not load responses', 'error'); }
+    statResponses = [];
   }
-}
-
-function statGetAnswer(resp, qid){
-  const answers = resp.answers || resp.responses || {};
-  return answers[qid];
-}
-
-function statAnswerToText(val){
-  if (val == null) return '';
-  if (Array.isArray(val)) return val.join(', ');
-  return String(val);
-}
-
-function statRenderKpis(){
-  const total = statResponses.length;
-  $('#stTotal').textContent = total;
-
-  const now = new Date();
-  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-  const weekAgo = now.getTime() - 7*24*60*60*1000;
-
-  let today = 0, week = 0;
-  for (const r of statResponses){
-    const ts = r.submittedAt?.toDate ? r.submittedAt.toDate().getTime()
-             : r.submittedAt ? new Date(r.submittedAt).getTime() : 0;
-    if (!ts) continue;
-    if (ts >= startOfDay) today++;
-    if (ts >= weekAgo) week++;
-  }
-  $('#stToday').textContent = today;
-  $('#stWeek').textContent = week;
-
-  const qs = statGetFormQuestions(statCurrentFormId);
-  const requiredQs = qs.filter(q => q.required);
-  let complete = 0;
-  if (total > 0 && requiredQs.length > 0){
-    for (const r of statResponses){
-      let ok = true;
-      for (const q of requiredQs){
-        const v = statGetAnswer(r, q.id);
-        if (v == null || (Array.isArray(v) && !v.length) || String(v).trim() === ''){ ok = false; break; }
-      }
-      if (ok) complete++;
-    }
-  } else if (total > 0){
-    complete = total;
-  }
-  $('#stCompletion').textContent = total ? Math.round((complete/total)*100) + '%' : '0%';
-}
-
-function statRenderQuestions(){
-  const host = $('#statQuestions');
-  const qs = statGetFormQuestions(statCurrentFormId).filter(q => ANSWERABLE_TYPES.includes(q.type));
-  if (!qs.length){
-    host.innerHTML = '<div class="empty"><i class="fa-solid fa-list-check"></i><h3>No questions</h3><p>This form has no answerable questions.</p></div>';
-    return;
-  }
-  $('#statQCount').textContent = qs.length + ' question' + (qs.length===1?'':'s') + ' · ' + statResponses.length + ' responses';
-
-  host.innerHTML = qs.map((q, qi) => {
-    const answers = statResponses.map(r => statGetAnswer(r, q.id)).filter(v =>
-      v != null && !(Array.isArray(v) && !v.length) && String(v).trim() !== ''
-    );
-    const answered = answers.length;
-    const meta = QUESTION_TYPES.find(t => t.type === q.type) || { label:q.type };
-    const typeBadge = `<span class="stat-q-type">${escapeHtml(meta.label)}</span>`;
-
-    let body = '';
-
-    if (['radio','dropdown','scale'].includes(q.type)){
-      const counts = {};
-      for (const a of answers){
-        const key = statAnswerToText(a);
-        counts[key] = (counts[key]||0) + 1;
-      }
-      const max = Math.max(1, ...Object.values(counts));
-      body = `<div class="stat-bar-wrap">${
-        Object.entries(counts).sort((a,b)=>b[1]-a[1]).map(([k,v]) => `
-          <div class="stat-bar-row">
-            <span class="stat-bar-label" title="${escapeHtml(k)}">${escapeHtml(k)}</span>
-            <div class="stat-bar-track"><div class="stat-bar-fill" style="width:${(v/max)*100}%"></div></div>
-            <span class="stat-bar-val">${v} (${answered?Math.round(v/answered*100):0}%)</span>
-          </div>`).join('')
-      }</div>`;
-    } else if (q.type === 'checkbox'){
-      const counts = {};
-      for (const a of answers){
-        const arr = Array.isArray(a) ? a : [a];
-        for (const v of arr){ const k = statAnswerToText(v); counts[k]=(counts[k]||0)+1; }
-      }
-      const max = Math.max(1, ...Object.values(counts));
-      body = `<div class="stat-bar-wrap">${
-        Object.entries(counts).sort((a,b)=>b[1]-a[1]).map(([k,v]) => `
-          <div class="stat-bar-row">
-            <span class="stat-bar-label" title="${escapeHtml(k)}">${escapeHtml(k)}</span>
-            <div class="stat-bar-track"><div class="stat-bar-fill" style="width:${(v/max)*100}%"></div></div>
-            <span class="stat-bar-val">${v}</span>
-          </div>`).join('')
-      }</div>`;
-    } else if (q.type === 'number'){
-      const nums = answers.map(a => +a).filter(n => !isNaN(n));
-      if (nums.length){
-        const sum = nums.reduce((s,n)=>s+n,0);
-        const min = Math.min(...nums), max = Math.max(...nums);
-        const avg = sum/nums.length;
-        body = `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-top:8px">
-          <div class="settings-meta"><span class="lbl">Avg</span><span class="val">${avg.toFixed(2)}</span></div>
-          <div class="settings-meta"><span class="lbl">Min</span><span class="val">${min}</span></div>
-          <div class="settings-meta"><span class="lbl">Max</span><span class="val">${max}</span></div>
-          <div class="settings-meta"><span class="lbl">Sum</span><span class="val">${sum}</span></div>
-        </div>`;
-      }
-    } else {
-      const recent = answers.slice(0, 50);
-      body = `<div class="stat-text-answers">${
-        recent.length
-          ? recent.map(a => `<div class="stat-text-answer">${escapeHtml(statAnswerToText(a))}</div>`).join('')
-          : '<div style="font-size:.82rem;color:var(--text2)">No answers yet</div>'
-      }</div>`;
-    }
-
-    return `<div class="stat-q-block">
-      <div class="stat-q-title">${qi+1}. ${q.titleHtml || escapeHtml(q.title||'Untitled')} ${typeBadge}</div>
-      <div class="stat-q-meta"><i class="fa-solid fa-inbox"></i> ${answered} answered${answered!==statResponses.length?` of ${statResponses.length}`:''}</div>
-      ${body}
-    </div>`;
-  }).join('');
-}
-
-function statGetFilterableQuestions(){
-  return statGetFormQuestions(statCurrentFormId).filter(q =>
-    ['radio','checkbox','dropdown','scale'].includes(q.type)
-  );
-}
-
-function statQuestionOptions(q){
-  if (q.type === 'scale'){
-    const out = [];
-    for (let n = q.scaleMin||1; n <= (q.scaleMax||5); n++) out.push(String(n));
-    return out;
-  }
-  return (q.options || []).map(String);
-}
-
-function statRenderFilterRows(){
-  const host = $('#statFilterRows');
-  const qs = statGetFilterableQuestions();
-  if (!qs.length){
-    host.innerHTML = '<p style="font-size:.85rem;color:var(--text2)">This form has no choice-based questions to filter on.</p>';
-    return;
-  }
-  if (!statFilterDefs.length) statFilterDefs.push({ qid: qs[0].id, value: '' });
-
-  host.innerHTML = statFilterDefs.map((def, i) => {
-    const q = qs.find(x => x.id === def.qid) || qs[0];
-    const opts = statQuestionOptions(q);
-    const breakdownOpts = qs.map(qq =>
-      `<option value="${qq.id}" ${qq.id===def.breakdownQid?'selected':''}>${escapeHtml(qq.title||'Untitled')}</option>`
-    ).join('');
-
-    return `<div class="stat-filter-row" style="flex-wrap:wrap">
-      <select data-idx="${i}" data-role="q" style="flex:1;min-width:180px">
-        ${qs.map(qq => `<option value="${qq.id}" ${qq.id===def.qid?'selected':''}>${escapeHtml(qq.title||'Untitled')}</option>`).join('')}
-      </select>
-      <span style="color:var(--text2);font-size:.8rem">=</span>
-      <select data-idx="${i}" data-role="v" style="flex:1;min-width:140px">
-        <option value="">— any —</option>
-        ${opts.map(o => `<option value="${escapeHtml(o)}" ${o===def.value?'selected':''}>${escapeHtml(o)}</option>`).join('')}
-      </select>
-      <button class="icon-btn danger" data-idx="${i}" data-role="rm" title="Remove"><i class="fa-solid fa-xmark"></i></button>
-
-      <div style="display:flex;gap:8px;align-items:center;width:100%;margin-top:6px;padding-left:2px">
-        <span style="font-size:.74rem;color:var(--text2);white-space:nowrap">
-          <i class="fa-solid fa-code-branch"></i> Breakdown by:
-        </span>
-        <select data-idx="${i}" data-role="breakdown" style="flex:1;padding:7px 10px;font-size:.82rem;border:1.5px solid var(--border);border-radius:7px;background:#fff;color:var(--text)">
-          <option value="">— none —</option>
-          ${breakdownOpts}
-        </select>
-      </div>
-    </div>`;
-  }).join('');
-
-  host.querySelectorAll('select[data-role="q"]').forEach(sel => {
-    sel.addEventListener('change', e => {
-      const i = +e.target.dataset.idx;
-      statFilterDefs[i].qid = e.target.value;
-      statFilterDefs[i].value = '';
-      statRenderFilterRows();
-    });
-  });
-  host.querySelectorAll('select[data-role="v"]').forEach(sel => {
-    sel.addEventListener('change', e => {
-      const i = +e.target.dataset.idx;
-      statFilterDefs[i].value = e.target.value;
-    });
-  });
-  host.querySelectorAll('select[data-role="breakdown"]').forEach(sel => {
-    sel.addEventListener('change', e => {
-      const i = +e.target.dataset.idx;
-      statFilterDefs[i].breakdownQid = e.target.value || null;
-    });
-  });
-  host.querySelectorAll('button[data-role="rm"]').forEach(btn => {
-    btn.addEventListener('click', e => {
-      const i = +e.target.closest('button').dataset.idx;
-      statFilterDefs.splice(i,1);
-      statRenderFilterRows();
-    });
-  });
-}
-
-function statApplyFilters(){
-  const active = statFilterDefs.filter(d => d.value !== '');
-  const result = $('#statFilterResult');
-  if (!active.length){
-    result.innerHTML = '<div class="empty" style="padding:24px"><i class="fa-solid fa-filter-circle-xmark"></i><h3>No filters</h3><p>Add at least one filter with a value.</p></div>';
-    return;
-  }
-
-  const matched = statResponses.filter(r =>
-    active.every(d => {
-      const a = statGetAnswer(r, d.qid);
-      if (a == null) return false;
-      if (Array.isArray(a)) return a.map(String).includes(String(d.value));
-      return String(a) === String(d.value);
-    })
-  );
-
-  const qs = statGetFormQuestions(statCurrentFormId);
-  const desc = active.map(d => {
-    const q = qs.find(x => x.id === d.qid);
-    return `<span class="stat-answer-chip">${escapeHtml(q?.title||'Q')} = ${escapeHtml(d.value)}</span>`;
-  }).join(' <i class="fa-solid fa-plus" style="font-size:.65rem;color:var(--text2)"></i> ');
-
-  // Only show breakdowns for questions the admin selected in the dropdowns
-  const breakdownQids = statFilterDefs
-    .map(d => d.breakdownQid)
-    .filter(Boolean);
-
-  if (!matched.length){
-    result.innerHTML = `<div class="stat-filter-result-card">
-      <div class="stat-filter-result-head">
-        <div><div style="font-size:.82rem;color:var(--text2);margin-bottom:4px">Matching filters</div>${desc}</div>
-        <div class="stat-filter-result-count">0</div>
-      </div>
-      <p style="font-size:.86rem;color:var(--text2)">No responses matched this combination.</p>
-    </div>`;
-    return;
-  }
-
-  // Build breakdowns ONLY for explicitly-requested questions (deduplicated)
-  const seenBreakdown = new Set();
-  const breakdownBlocks = breakdownQids.map(qid => {
-    if (seenBreakdown.has(qid)) return '';
-    seenBreakdown.add(qid);
-    const q = qs.find(x => x.id === qid);
-    if (!q) return '';
-    const counts = {};
-    for (const r of matched){
-      const a = statGetAnswer(r, qid);
-      if (a == null) continue;
-      const arr = Array.isArray(a) ? a : [a];
-      for (const v of arr){
-        const k = statAnswerToText(v);
-        if (!k) continue;
-        counts[k] = (counts[k]||0) + 1;
-      }
-    }
-    const entries = Object.entries(counts).sort((a,b)=>b[1]-a[1]);
-    if (!entries.length){
-      return `<div style="margin-top:14px">
-        <div style="font-size:.82rem;font-weight:600;color:var(--dark-blue);margin-bottom:8px">
-          ${escapeHtml(q.title||'Question')} breakdown
-        </div>
-        <p style="font-size:.82rem;color:var(--text2)">No answers for this question in the matched set.</p>
-      </div>`;
-    }
-    const max = Math.max(...entries.map(e=>e[1]));
-    return `<div style="margin-top:14px">
-      <div style="font-size:.82rem;font-weight:600;color:var(--dark-blue);margin-bottom:8px">
-        ${escapeHtml(q.title||'Question')} breakdown
-      </div>
-      <div class="stat-bar-wrap">
-        ${entries.map(([k,v]) => `
-          <div class="stat-bar-row">
-            <span class="stat-bar-label" title="${escapeHtml(k)}">${escapeHtml(k)}</span>
-            <div class="stat-bar-track"><div class="stat-bar-fill" style="width:${(v/max)*100}%"></div></div>
-            <span class="stat-bar-val">${v} (${Math.round(v/matched.length*100)}%)</span>
-          </div>`).join('')}
-      </div>
-    </div>`;
-  }).join('');
-
-  result.innerHTML = `<div class="stat-filter-result-card">
-    <div class="stat-filter-result-head">
-      <div>
-        <div style="font-size:.82rem;color:var(--text2);margin-bottom:4px">Matching filters</div>
-        ${desc}
-      </div>
-      <div style="text-align:right">
-        <div class="stat-filter-result-count">${matched.length}</div>
-        <div style="font-size:.74rem;color:var(--text2)">of ${statResponses.length} responses (${Math.round(matched.length/statResponses.length*100)}%)</div>
-      </div>
-    </div>
-    ${breakdownBlocks || '<p style="font-size:.85rem;color:var(--text2)">Select a "Breakdown by" question on any filter row to see cross-tab results.</p>'}
-  </div>`;
 }
 
 async function loadStatistics(){
-  populateStatFormSelect();
   const sel = $('#statFormSelect');
-  statCurrentFormId = sel?.value || null;
+  if (!sel) return;
+  statCurrentFormId = sel.value || null;
   statFilterDefs = [];
+  renderStatFilterRows();
   $('#statFilterResult').innerHTML = '';
 
   if (!statCurrentFormId){
-    $('#statQuestions').innerHTML = '<div class="empty"><i class="fa-solid fa-chart-simple"></i><h3>No form selected</h3><p>Create a form first.</p></div>';
-    $('#statKpis').querySelectorAll('.sv').forEach(el => el.textContent = '0');
-    $('#statFilterRows').innerHTML = '';
+    ['#stTotal','#stToday','#stWeek'].forEach(id => $(id).textContent = '0');
+    $('#stCompletion').textContent = '0%';
+    $('#statQuestions').innerHTML = '<div class="empty"><i class="fa-solid fa-chart-simple"></i><h3>Select a form</h3><p>Choose a form above to view question-level statistics.</p></div>';
+    $('#statQCount').textContent = '—';
     return;
   }
 
   $('#statQuestions').innerHTML = '<div class="loader"><div class="spinner-lg"></div></div>';
   await loadStatResponses(statCurrentFormId);
-  statRenderKpis();
-  statRenderQuestions();
-  statRenderFilterRows();
+
+  const total = statResponses.length;
+  $('#stTotal').textContent = total;
+
+  const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const weekStart = todayStart - 6 * 86400000;
+
+  const parseTs = (r) => {
+    const ts = r.submittedAt || r.createdAt;
+    if (!ts) return null;
+    try { return ts.toDate ? ts.toDate().getTime() : new Date(ts).getTime(); } catch { return null; }
+  };
+
+  let todayCount = 0, weekCount = 0;
+  statResponses.forEach(r => {
+    const t = parseTs(r);
+    if (t == null) return;
+    if (t >= todayStart) todayCount++;
+    if (t >= weekStart) weekCount++;
+  });
+  $('#stToday').textContent = todayCount;
+  $('#stWeek').textContent = weekCount;
+
+  const qs = statGetFormQuestions(statCurrentFormId);
+  const requiredQs = qs.filter(q => q.required);
+  let completionSum = 0, denom = 0;
+  if (requiredQs.length && total){
+    requiredQs.forEach(q => {
+      const answered = statResponses.filter(r => {
+        const v = (r.answers || {})[q.id];
+        return v !== undefined && v !== null && v !== '' && !(Array.isArray(v) && !v.length);
+      }).length;
+      completionSum += answered / total;
+      denom++;
+    });
+  }
+  const completionPct = denom ? Math.round((completionSum / denom) * 100) : (total ? 100 : 0);
+  $('#stCompletion').textContent = completionPct + '%';
+
+  $('#statQCount').textContent = qs.length + ' questions · ' + total + ' responses';
+  renderStatQuestions(qs, statResponses);
 }
 
-$('#statFormSelect')?.addEventListener('change', loadStatistics);
-$('#statRefreshBtn')?.addEventListener('click', loadStatistics);
-$('#statAddFilter')?.addEventListener('click', () => {
-  const qs = statGetFilterableQuestions();
-  if (!qs.length){ toast('No filterable questions', 'error'); return; }
-  statFilterDefs.push({ qid: qs[0].id, value: '' });
-  statRenderFilterRows();
-});
-$('#statClearFilters')?.addEventListener('click', () => {
-  statFilterDefs = [];
-  $('#statFilterResult').innerHTML = '';
-  statRenderFilterRows();
-});
-$('#statApplyFilters')?.addEventListener('click', statApplyFilters);
+function renderStatQuestions(questions, responses){
+  const host = $('#statQuestions');
+  if (!questions.length){ host.innerHTML = '<div class="empty"><i class="fa-solid fa-list-check"></i><h3>No questions</h3></div>'; return; }
+  const total = responses.length;
+  if (!total){ host.innerHTML = '<div class="empty"><i class="fa-solid fa-inbox"></i><h3>No responses yet</h3><p>Stats will appear once submissions are received.</p></div>'; return; }
 
-/* ---------- Settings page ---------- */
+  host.innerHTML = questions.filter(q => ANSWERABLE_TYPES.includes(q.type)).map(q => {
+    const meta = QUESTION_TYPES.find(t => t.type === q.type) || { label:q.type };
+    const answers = responses.map(r => (r.answers || {})[q.id]).filter(v => v !== undefined && v !== null && v !== '');
+
+    if (['radio','dropdown','scale'].includes(q.type)){
+      const counts = {};
+      answers.forEach(v => { counts[v] = (counts[v]||0) + 1; });
+      const max = Math.max(1, ...Object.values(counts));
+      const bars = Object.entries(counts).sort((a,b) => b[1]-a[1]).map(([val,c]) => `
+        <div class="stat-bar-row">
+          <div class="stat-bar-label" title="${escapeHtml(val)}">${escapeHtml(val)}</div>
+          <div class="stat-bar-track"><div class="stat-bar-fill" style="width:${(c/max)*100}%"></div></div>
+          <div class="stat-bar-val">${c} (${Math.round(c/total*100)}%)</div>
+        </div>`).join('');
+      return `<div class="stat-q-block">
+        <div class="stat-q-title">${q.titleHtml || escapeHtml(q.title||'Untitled')}<span class="stat-q-type">${meta.label}</span></div>
+        <div class="stat-q-meta">${answers.length} of ${total} answered</div>
+        <div class="stat-bar-wrap">${bars || '<p style="font-size:.82rem;color:var(--text2)">No answers yet.</p>'}</div>
+      </div>`;
+    }
+
+    if (q.type === 'checkbox'){
+      const counts = {};
+      answers.forEach(arr => { (arr||[]).forEach(v => counts[v] = (counts[v]||0) + 1); });
+      const max = Math.max(1, ...Object.values(counts));
+      const bars = Object.entries(counts).sort((a,b) => b[1]-a[1]).map(([val,c]) => `
+        <div class="stat-bar-row">
+          <div class="stat-bar-label" title="${escapeHtml(val)}">${escapeHtml(val)}</div>
+          <div class="stat-bar-track"><div class="stat-bar-fill" style="width:${(c/max)*100}%"></div></div>
+          <div class="stat-bar-val">${c} (${Math.round(c/total*100)}%)</div>
+        </div>`).join('');
+      return `<div class="stat-q-block">
+        <div class="stat-q-title">${q.titleHtml || escapeHtml(q.title||'Untitled')}<span class="stat-q-type">${meta.label}</span></div>
+        <div class="stat-q-meta">${answers.length} of ${total} answered</div>
+        <div class="stat-bar-wrap">${bars || '<p style="font-size:.82rem;color:var(--text2)">No answers yet.</p>'}</div>
+      </div>`;
+    }
+
+    const items = answers.map(a => `<div class="stat-text-answer">${escapeHtml(String(a))}</div>`).join('');
+    return `<div class="stat-q-block">
+      <div class="stat-q-title">${q.titleHtml || escapeHtml(q.title||'Untitled')}<span class="stat-q-type">${meta.label}</span></div>
+      <div class="stat-q-meta">${answers.length} of ${total} answered</div>
+      <div class="stat-text-answers">${items || '<p style="font-size:.82rem;color:var(--text2)">No answers yet.</p>'}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderStatFilterRows(){
+  const host = $('#statFilterRows');
+  if (!host) return;
+  const qs = statGetFormQuestions(statCurrentFormId).filter(q => ['radio','checkbox','dropdown'].includes(q.type));
+  if (!qs.length){
+    host.innerHTML = '<p style="font-size:.85rem;color:var(--text2)">This form has no categorical questions to filter on.</p>';
+    return;
+  }
+  if (!statFilterDefs.length) statFilterDefs.push({ qid:qs[0].id, value:'', breakdownQid:'' });
+
+  host.innerHTML = statFilterDefs.map((def, i) => {
+    const q = qs.find(x => x.id === def.qid) || qs[0];
+    const optValues = new Set();
+    statResponses.forEach(r => {
+      const v = (r.answers||{})[q.id];
+      if (Array.isArray(v)) v.forEach(x => optValues.add(x));
+      else if (v != null && v !== '') optValues.add(v);
+    });
+    const valOpts = '<option value="">— Any —</option>' + [...optValues].map(v =>
+      `<option value="${escapeHtml(v)}" ${def.value===v?'selected':''}>${escapeHtml(v)}</option>`).join('');
+    const qOpts = qs.map(x => `<option value="${x.id}" ${def.qid===x.id?'selected':''}>${escapeHtml(x.title||'Untitled')}</option>`).join('');
+    const bdOpts = '<option value="">— None —</option>' + qs.map(x => `<option value="${x.id}" ${def.breakdownQid===x.id?'selected':''}>${escapeHtml(x.title||'Untitled')}</option>`).join('');
+
+    return `<div class="stat-filter-row" data-idx="${i}" style="background:var(--bg);padding:10px;border-radius:10px;border:1px solid var(--border)">
+      <select class="stat-f-q">${qOpts}</select>
+      <select class="stat-f-v">${valOpts}</select>
+      <select class="stat-f-bd">${bdOpts}</select>
+      <button class="icon-btn danger stat-f-remove" title="Remove"><i class="fa-solid fa-xmark"></i></button>
+    </div>`;
+  }).join('');
+
+  host.querySelectorAll('.stat-filter-row').forEach(row => {
+    const idx = +row.dataset.idx;
+    row.querySelector('.stat-f-q').addEventListener('change', e => {
+      statFilterDefs[idx].qid = e.target.value;
+      statFilterDefs[idx].value = '';
+      statFilterDefs[idx].breakdownQid = '';
+      renderStatFilterRows();
+    });
+    row.querySelector('.stat-f-v').addEventListener('change', e => {
+      statFilterDefs[idx].value = e.target.value;
+    });
+    row.querySelector('.stat-f-bd').addEventListener('change', e => {
+      statFilterDefs[idx].breakdownQid = e.target.value;
+    });
+    row.querySelector('.stat-f-remove').addEventListener('click', () => {
+      statFilterDefs.splice(idx, 1);
+      renderStatFilterRows();
+    });
+  });
+}
+
+function applyStatFilters(){
+  const host = $('#statFilterResult');
+  const validFilters = statFilterDefs.filter(d => d.value);
+  if (!validFilters.length){
+    host.innerHTML = '<div class="empty"><i class="fa-solid fa-filter"></i><h3>No active filters</h3><p>Set a value on at least one filter row.</p></div>';
+    return;
+  }
+  const matches = statResponses.filter(r => {
+    return validFilters.every(f => {
+      const v = (r.answers||{})[f.qid];
+      if (Array.isArray(v)) return v.includes(f.value);
+      return v === f.value;
+    });
+  });
+
+  const breakdownDef = statFilterDefs.find(d => d.breakdownQid);
+  let breakdownHtml = '';
+  if (breakdownDef){
+    const counts = {};
+    matches.forEach(r => {
+      const v = (r.answers||{})[breakdownDef.breakdownQid];
+      if (Array.isArray(v)) v.forEach(x => counts[x] = (counts[x]||0)+1);
+      else if (v != null && v !== '') counts[v] = (counts[v]||0)+1;
+    });
+    const max = Math.max(1, ...Object.values(counts));
+    const rows = Object.entries(counts).sort((a,b)=>b[1]-a[1]).map(([val,c]) => `
+      <div class="stat-bar-row">
+        <div class="stat-bar-label" title="${escapeHtml(val)}">${escapeHtml(val)}</div>
+        <div class="stat-bar-track"><div class="stat-bar-fill" style="width:${(c/max)*100}%"></div></div>
+        <div class="stat-bar-val">${c} (${matches.length?Math.round(c/matches.length*100):0}%)</div>
+      </div>`).join('');
+    breakdownHtml = `<div style="margin-top:14px"><b style="font-size:.88rem;color:var(--dark-blue)">Breakdown</b>${rows ? `<div class="stat-bar-wrap">${rows}</div>` : '<p style="font-size:.82rem;color:var(--text2)">No answers.</p>'}</div>`;
+  }
+
+  const chipHtml = validFilters.map(f => {
+    const q = statGetFormQuestions(statCurrentFormId).find(x => x.id === f.qid);
+    return `<span class="stat-answer-chip">${escapeHtml(q?.title||'Q')} = ${escapeHtml(f.value)}</span>`;
+  }).join(' ');
+
+  host.innerHTML = `<div class="stat-filter-result-card">
+    <div class="stat-filter-result-head">
+      <div>${chipHtml}</div>
+      <div class="stat-filter-result-count">${matches.length} match${matches.length===1?'':'es'}</div>
+    </div>
+    ${breakdownHtml}
+  </div>`;
+}
+
+document.getElementById('statFormSelect')?.addEventListener('change', loadStatistics);
+document.getElementById('statRefreshBtn')?.addEventListener('click', loadStatistics);
+document.getElementById('statAddFilter')?.addEventListener('click', () => {
+  const qs = statGetFormQuestions(statCurrentFormId).filter(q => ['radio','checkbox','dropdown'].includes(q.type));
+  if (!qs.length){ toast('No categorical questions available', 'error'); return; }
+  statFilterDefs.push({ qid:qs[0].id, value:'', breakdownQid:'' });
+  renderStatFilterRows();
+});
+document.getElementById('statApplyFilters')?.addEventListener('click', applyStatFilters);
+document.getElementById('statClearFilters')?.addEventListener('click', () => {
+  statFilterDefs = [];
+  renderStatFilterRows();
+  $('#statFilterResult').innerHTML = '';
+});
+
+/* ---------- Settings ---------- */
 function hydrateAccountInfo(){
   if (!currentUser) return;
-  const a = currentUser;
+  const set = (id, v) => { const el = $(id); if (el) el.textContent = v; };
+  set('#settingsUid', currentUser.uid || '—');
+  set('#settingsLastSignIn', fmtDate(currentUser.metadata?.lastSignInTime) || '—');
+  set('#settingsVerified', currentUser.emailVerified ? 'Yes' : 'No');
+  set('#settingsSince', fmtDate(currentUser.metadata?.creationTime) || '—');
+
   const docData = currentAdminDoc || {};
-
-  const email = docData.email || a.email || '—';
-  const displayName = docData.name
-    || docData.displayName
-    || a.displayName
-    || (a.email ? a.email.split('@')[0] : 'Administrator');
-  const initial = (displayName || email || 'A').charAt(0).toUpperCase();
-
-  const av = $('#settingsAvatar'); if (av) av.textContent = initial;
-  const nameEl = $('#settingsName'); if (nameEl) nameEl.textContent = displayName;
-  const em = $('#settingsEmail'); if (em) em.textContent = email;
-
-  const rolePill = document.querySelector('.settings-role');
-  if (rolePill){
-    const role = docData.role || 'Administrator';
-    rolePill.innerHTML =
-      '<i class="fa-solid fa-shield-halved"></i> ' +
-      escapeHtml(role) + ' — full access';
-  }
-
-  const uidEl = $('#settingsUid'); if (uidEl) uidEl.textContent = a.uid || '—';
-
-  const lastIn = $('#settingsLastSignIn');
-  if (lastIn){
-    lastIn.textContent = a.metadata?.lastSignInTime
-      ? fmtDate(new Date(a.metadata.lastSignInTime))
-      : '—';
-  }
-
-  const verified = $('#settingsVerified');
-  if (verified){
-    verified.textContent = a.emailVerified ? 'Yes' : 'No';
-    verified.style.color = a.emailVerified ? 'var(--success)' : '#b8860b';
-  }
-
-  const since = $('#settingsSince');
-  if (since){
-    if (docData.createdAt){
-      since.textContent = fmtDateShort(docData.createdAt);
-    } else if (a.metadata?.creationTime){
-      since.textContent = fmtDateShort(new Date(a.metadata.creationTime));
-    } else {
-      since.textContent = '—';
-    }
-  }
-
-  const opts = [
-    { key:'department', wrap:'#metaDepartment', val:'#settingsDepartment' },
-    { key:'position',   wrap:'#metaPosition',   val:'#settingsPosition'   },
-    { key:'phone',      wrap:'#metaPhone',      val:'#settingsPhone'      }
-  ];
-  for (const o of opts){
-    const wrapEl = $(o.wrap);
-    const valEl = $(o.val);
-    if (!wrapEl || !valEl) continue;
-    if (docData[o.key]){
-      valEl.textContent = String(docData[o.key]);
-      wrapEl.style.display = '';
-    } else {
-      wrapEl.style.display = 'none';
-    }
-  }
+  const show = (metaId, valId, val) => {
+    const meta = $(metaId);
+    if (val){ if (meta) meta.style.display = ''; set(valId, val); }
+    else if (meta) meta.style.display = 'none';
+  };
+  show('#metaDepartment','#settingsDepartment', docData.department);
+  show('#metaPosition','#settingsPosition', docData.position);
+  show('#metaPhone','#settingsPhone', docData.phone);
 }
-window.refreshAccountInfo = async () => {
-  if (currentUser){
-    try {
-      const fresh = await getDoc(doc(db, 'admins', currentUser.uid));
-      if (fresh.exists()) currentAdminDoc = fresh.data() || {};
-    } catch(e){
-      console.error('Refresh failed:', e);
-    }
-  }
-  applyAdminIdentity();
-  hydrateAccountInfo();
-  toast('Account info refreshed');
-};
+function refreshAccountInfo(){
+  if (!currentUser){ toast('Not signed in', 'error'); return; }
+  currentUser.reload().then(() => { hydrateAccountInfo(); toast('Account info refreshed', 'success'); })
+    .catch(e => toast('Failed: ' + e.message, 'error'));
+}
+window.refreshAccountInfo = refreshAccountInfo;
 
-async function sendPasswordReset(){
-  if (!currentUser?.email) { toast('No email on this account', 'error'); return; }
-  const ok = await confirmDialog({
-    title: 'Send Password Reset Email?',
-    msg: `A password reset link will be sent to ${currentUser.email}. Continue?`,
-    type: 'info',
-    okText: 'Send Email'
-  });
-  if (!ok) return;
-  try {
-    await sendPasswordResetEmail(auth, currentUser.email);
-    toast('Password reset email sent', 'success');
-  } catch (e){
-    console.error(e);
-    toast('Could not send reset email: ' + (e.message || 'Unknown error'), 'error');
-  }
+function sendPasswordReset(){
+  if (!currentUser || !currentUser.email){ toast('No email available', 'error'); return; }
+  confirmDialog({title:'Send Password Reset', msg:'A reset link will be emailed to ' + currentUser.email + '. Continue?', type:'info', okText:'Send'})
+    .then(ok => {
+      if (!ok) return;
+      sendPasswordResetEmail(auth, currentUser.email)
+        .then(() => toast('Password reset email sent', 'success'))
+        .catch(e => toast('Failed: ' + e.message, 'error'));
+    });
 }
 window.sendPasswordReset = sendPasswordReset;
 
-/* ---------- Initialize top editors on first load ---------- */
+/* ---------- Init ---------- */
 initTopEditors();
 </script>
 </body>
