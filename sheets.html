@@ -1902,7 +1902,7 @@ async function renderFormSelector(){
       <h2>Choose a Form</h2>
       <p>Select a form to open its response spreadsheet.</p>
       <div class="list">
-        ${forms.map(f => `<div class="item" onclick="location.href='spreedsheets.html?id=${encodeURIComponent(f.id)}'">
+        ${forms.map(f => `<div class="item" onclick="location.href='sheets.html?id=${encodeURIComponent(f.id)}'">
           <div><b>${escapeHtml(f.title||'Untitled')}</b>
             <small><i class="fa-solid fa-inbox"></i> ${f.responseCount||0} responses · ${f.status==='published'?'Published':'Draft'}</small></div>
           <i class="fa-solid fa-arrow-right" style="color:var(--primary)"></i>
