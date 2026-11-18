@@ -411,6 +411,53 @@ select.inline-editor{appearance:none;cursor:pointer}
 .detail-meta b{color:var(--dark-blue);display:block;font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;font-weight:700}
 .detail-meta span{color:var(--text2);font-family:'JetBrains Mono',monospace;font-size:.78rem;word-break:break-all}
 
+/* ---- EDIT RESPONSE FORM ---- */
+.edit-grid{display:flex;flex-direction:column;gap:14px}
+.edit-field{display:flex;flex-direction:column;gap:6px}
+.edit-field label{font-size:.78rem;font-weight:700;color:var(--dark-blue);text-transform:uppercase;letter-spacing:.03em;display:flex;align-items:center;gap:6px}
+.edit-field label .req{color:var(--error)}
+.edit-field label .type-badge{
+  font-size:.62rem;font-weight:600;text-transform:none;letter-spacing:0;
+  background:var(--light-blue);color:var(--primary-700);border-radius:6px;
+  padding:1px 7px;margin-left:auto;
+}
+.edit-field input[type=text],
+.edit-field input[type=number],
+.edit-field input[type=email],
+.edit-field textarea,
+.edit-field select{
+  width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:10px;
+  font-size:.88rem;outline:none;transition:all .2s var(--ease);background:#fff;color:var(--text);
+}
+.edit-field input:focus,.edit-field textarea:focus,.edit-field select:focus{
+  border-color:var(--primary);box-shadow:0 0 0 4px rgba(74,144,226,.12);
+}
+.edit-field textarea{resize:vertical;min-height:72px;line-height:1.5}
+.edit-field select{cursor:pointer;appearance:none;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='%2364748B' d='M0 0l5 6 5-6z'/></svg>");
+  background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;
+}
+.checkbox-group,.radio-group{display:flex;flex-direction:column;gap:7px;padding:4px 0}
+.checkbox-group label,.radio-group label{
+  display:flex;align-items:center;gap:9px;font-size:.86rem;color:var(--text);
+  text-transform:none;letter-spacing:0;font-weight:500;cursor:pointer;
+  padding:7px 11px;border:1.5px solid var(--border);border-radius:9px;transition:all .15s;
+}
+.checkbox-group label:hover,.radio-group label:hover{border-color:var(--primary);background:rgba(220,238,255,.35)}
+.checkbox-group label:has(input:checked),.radio-group label:has(input:checked){
+  border-color:var(--primary);background:rgba(220,238,255,.55);font-weight:600;
+}
+.checkbox-group input,.radio-group input{accent-color:var(--primary);width:16px;height:16px;cursor:pointer}
+.edit-orphan-note{
+  font-size:.78rem;color:#7A5A00;background:rgba(255,247,224,.7);
+  border:1px solid #F3D577;border-radius:10px;padding:9px 12px;line-height:1.45;
+}
+.edit-unsaved-note{
+  font-size:.8rem;color:var(--text2);display:flex;align-items:center;gap:7px;
+  padding:4px 0;
+}
+.edit-unsaved-note i{color:var(--warn)}
+
 /* toast */
 .toast-wrap{position:fixed;bottom:26px;right:26px;display:flex;flex-direction:column;gap:10px;z-index:300}
 .toast{
@@ -529,7 +576,7 @@ select.inline-editor{appearance:none;cursor:pointer}
     </div>
   </div>
 
-  <!-- DIAGNOSTIC BANNER (auto-shows when data is structurally broken) -->
+  <!-- DIAGNOSTIC BANNER -->
   <div class="diag-banner" id="diagBanner">
     <i class="fa-solid fa-triangle-exclamation"></i>
     <div id="diagText"></div>
@@ -633,7 +680,7 @@ let duplicateColumn = null;
 let duplicateValues = new Set();
 let exportInProgress = false;
 
-/* Unified column model: form questions + any orphan answer keys found in data */
+/* Unified column model */
 let columns = [];
 
 const VIRTUAL_BUFFER = 6;
@@ -642,11 +689,9 @@ const ROW_HEIGHT_COMFORTABLE = 42;
 let rowHeight = ROW_HEIGHT_COMFORTABLE;
 let scrollRaf = null;
 
-/* Data version counter — bumped whenever allResponses or columns change.
-   applyFilters() compares against lastRenderedVersion to decide whether the
-   cached filteredResponses can be reused. This eliminates the stale-cache bug. */
 let dataVersion = 0;
 let lastRenderedVersion = -1;
+let lastFilterSignature = '';
 
 const $ = s => document.querySelector(s);
 const $$ = s => document.querySelectorAll(s);
@@ -700,7 +745,6 @@ function formatAnswer(v){
   return String(v);
 }
 
-/* Build search haystack from id + date + every answer value + every answer key */
 function prepareResponse(r){
   const answers = r.answers || {};
   const parts = [r.id, fmtDate(r.submittedAt)];
@@ -714,7 +758,6 @@ function prepareResponse(r){
   return r;
 }
 
-/* Discover orphan answer keys — present in data, absent from form.questions */
 function discoverColumns(){
   const declared = new Set((formData.questions || []).map(q => q.id));
   const orphans = new Set();
@@ -815,7 +858,6 @@ async function loadForm(){
     $('#formulaBar').classList.add('show');
     $('#statsStrip').classList.add('show');
 
-    /* Clear any stale UI state so the first render shows every response */
     $('#searchInput').value = '';
     $('#filterColumn').value = '';
     $('#filterValue').value = '';
@@ -825,6 +867,7 @@ async function loadForm(){
     setSegActive('');
     dataVersion = 0;
     lastRenderedVersion = -1;
+    lastFilterSignature = '';
 
     loadResponsesRealtime();
   } catch(e){
@@ -835,7 +878,6 @@ async function loadForm(){
   }
 }
 
-/* Rebuild the column dropdown options after columns are discovered */
 function refreshColumnDropdowns(){
   const sortSel = $('#sortColumn');
   const filterSel = $('#filterColumn');
@@ -848,13 +890,13 @@ function refreshColumnDropdowns(){
   if ([...filterSel.options].some(o => o.value === prevFilter)) filterSel.value = prevFilter;
 }
 
-/* ---------------- Real-time responses (no orderBy filter) ---------------- */
+/* ---------------- Real-time responses ---------------- */
 function loadResponsesRealtime(){
   if (unsubscribeSnapshot) unsubscribeSnapshot();
   $('#gridWrap').innerHTML = `<div class="loading-wrap"><div class="spinner-lg"></div><div>Connecting to live data…</div></div>`;
 
   const respCol = collection(db, 'forms', formId, 'responses');
-  const q = query(respCol); // no orderBy — Firestore drops docs missing submittedAt
+  const q = query(respCol);
 
   unsubscribeSnapshot = onSnapshot(q, (snap) => {
     const next = snap.docs.map(d => prepareResponse({ id: d.id, ...d.data() }));
@@ -864,7 +906,6 @@ function loadResponsesRealtime(){
     discoverColumns();
     refreshColumnDropdowns();
 
-    /* Bump version → every subscriber (the filter pipeline) recomputes */
     dataVersion++;
 
     const now = new Date().toLocaleTimeString('en-PH', {hour:'2-digit',minute:'2-digit'});
@@ -874,9 +915,6 @@ function loadResponsesRealtime(){
     $('#kpiTotal').textContent = allResponses.length;
 
     checkDiagnostics();
-
-    /* Always re-run the filter pipeline on data changes. This is O(n)
-       but n is small and correctness > micro-optimization here. */
     applyFilters();
   }, (error) => {
     console.error(error);
@@ -886,7 +924,6 @@ function loadResponsesRealtime(){
   });
 }
 
-/* Detect structurally broken data and warn via banner */
 function checkDiagnostics(){
   const banner = $('#diagBanner');
   const text = $('#diagText');
@@ -898,7 +935,7 @@ function checkDiagnostics(){
 
   const msgs = [];
   if (emptyAnswers > 0)
-    msgs.push(`<b>${emptyAnswers}</b> response(s) have <code>answers: {}</code> — their data was lost at write time. These rows appear in the grid but show no answer values, so searching by content won't find them.`);
+    msgs.push(`<b>${emptyAnswers}</b> response(s) have <code>answers: {}</code> — their data was lost at write time.`);
   if (missingTs > 0)
     msgs.push(`<b>${missingTs}</b> response(s) have no <code>submittedAt</code> — they still appear, but won't sort chronologically.`);
   if (orphanCount > 0)
@@ -947,21 +984,15 @@ function buildDuplicateSet(col){
 }
 
 /* ---------------- Filter / sort ---------------- */
-/* The cache here is ONLY used to skip re-rendering when the UI inputs are
-   identical AND the underlying data has not changed. Any data change bumps
-   dataVersion, which invalidates the cache unconditionally. This is the
-   fix for the "row shows then disappears on refresh/search" race. */
 function applyFilters(){
   const term = ($('#searchInput').value || '').toLowerCase().trim();
   const filterCol = $('#filterColumn').value;
   const filterVal = ($('#filterValue').value || '').toLowerCase().trim();
   const sortCol = $('#sortColumn').value;
 
-  /* Build a signature covering BOTH the UI state AND the data version. */
   const signature = `${term}|${filterCol}|${filterVal}|${duplicatesOnly}|${duplicateColumn}|${sortCol}|${sortColumnDir}|v${dataVersion}`;
 
   if (signature === lastFilterSignature) {
-    /* Nothing changed since the last render — skip the work. */
     return;
   }
   lastFilterSignature = signature;
@@ -1006,8 +1037,6 @@ function applyFilters(){
   updateKpis();
   $('#rowCount').textContent = allResponses.length;
 }
-
-let lastFilterSignature = '';
 
 $('#sortAsc').addEventListener('click', () => {
   sortColumnDir = 1;
@@ -1268,14 +1297,20 @@ function buildRow(r, ri){
 
   const numCell = document.createElement('div');
   numCell.className = 'grid-cell row-num';
-  numCell.innerHTML = `${ri + 2} <button class="row-action-btn" data-del="${r.id}" title="Delete Response"><i class="fa-solid fa-trash"></i></button>`;
+  numCell.innerHTML = `${ri + 2} 
+    <button class="row-action-btn" data-edit="${r.id}" title="Edit Response" style="right:32px"><i class="fa-solid fa-pen"></i></button>
+    <button class="row-action-btn" data-del="${r.id}" title="Delete Response"><i class="fa-solid fa-trash"></i></button>`;
   numCell.addEventListener('click', (e) => {
-    if (e.target.closest('[data-del]')) return;
+    if (e.target.closest('[data-del]') || e.target.closest('[data-edit]')) return;
     selectRow(r.id);
   });
   numCell.querySelector('[data-del]').addEventListener('click', (e) => {
     e.stopPropagation();
     deleteResponse(r.id);
+  });
+  numCell.querySelector('[data-edit]').addEventListener('click', (e) => {
+    e.stopPropagation();
+    openEditResponse(r.id);
   });
   row.appendChild(numCell);
 
@@ -1363,8 +1398,6 @@ function startEditing(cell, response, qid){
         if (!response.answers) response.answers = {};
         response.answers[qid] = newVal;
         prepareResponse(response);
-        /* Data will be re-delivered by onSnapshot; the version bump in the
-           listener forces a re-render with fresh filteredResponses. */
         toast('Response updated');
       } catch (err) {
         console.error(err);
@@ -1372,8 +1405,6 @@ function startEditing(cell, response, qid){
       }
     }
     editor.remove();
-
-    /* No DOM surgery needed — onSnapshot will refresh this row. */
     applyFilters();
   };
   editor.addEventListener('blur', save);
@@ -1399,6 +1430,165 @@ async function deleteResponse(rid) {
   }
 }
 window.deleteResponse = deleteResponse;
+
+/* ---------------- EDIT RESPONSE (full modal) ---------------- */
+function openEditResponse(rid){
+  const r = allResponses.find(x => x.id === rid);
+  if (!r) { toast('Response not found', 'error'); return; }
+
+  const questions = formData.questions || [];
+  const orphans = columns.filter(c => c.orphan);
+  const orphanValues = orphans.filter(c => r.answers && r.answers[c.id] != null && r.answers[c.id] !== '');
+
+  const fieldsHTML = questions.map(q => {
+    const raw = r.answers?.[q.id];
+    const val = Array.isArray(raw) ? raw : (raw == null ? '' : String(raw));
+    const reqMark = q.required ? ' <span class="req">*</span>' : '';
+    const typeBadge = `<span class="type-badge">${escapeHtml(q.type || 'text')}</span>`;
+    const label = `<label>${escapeHtml(q.title || 'Question')}${reqMark}${typeBadge}</label>`;
+    let input = '';
+
+    if (q.type === 'radio' || q.type === 'dropdown'){
+      const opts = (q.options || []).map(o =>
+        `<option value="${escapeHtml(o)}" ${o === val ? 'selected' : ''}>${escapeHtml(o)}</option>`
+      ).join('');
+      if (q.type === 'dropdown'){
+        input = `<select data-qid="${q.id}" data-type="dropdown">
+          <option value="">(empty)</option>${opts}
+        </select>`;
+      } else {
+        input = `<div class="radio-group">${(q.options || []).map((o, oi) =>
+          `<label><input type="radio" name="radio_${q.id}" value="${escapeHtml(o)}" data-qid="${q.id}" data-type="radio" ${o === val ? 'checked' : ''}> ${escapeHtml(o)}</label>`
+        ).join('') || '<span style="color:var(--text2);font-size:.82rem">(no options defined)</span>'}</div>`;
+      }
+    } else if (q.type === 'checkbox'){
+      const selected = Array.isArray(raw) ? raw : (raw ? [raw] : []);
+      input = `<div class="checkbox-group">${(q.options || []).map(o =>
+        `<label><input type="checkbox" value="${escapeHtml(o)}" data-qid="${q.id}" data-type="checkbox" ${selected.includes(o) ? 'checked' : ''}> ${escapeHtml(o)}</label>`
+      ).join('') || '<span style="color:var(--text2);font-size:.82rem">(no options defined)</span>'}</div>`;
+    } else if (q.type === 'textarea' || q.type === 'long-text' || q.type === 'paragraph'){
+      input = `<textarea data-qid="${q.id}" data-type="textarea" placeholder="Enter answer…">${escapeHtml(val)}</textarea>`;
+    } else if (q.type === 'number'){
+      input = `<input type="number" data-qid="${q.id}" data-type="number" value="${escapeHtml(val)}" placeholder="Enter number…">`;
+    } else if (q.type === 'email'){
+      input = `<input type="email" data-qid="${q.id}" data-type="email" value="${escapeHtml(val)}" placeholder="name@example.com">`;
+    } else if (q.type === 'date'){
+      input = `<input type="text" data-qid="${q.id}" data-type="date" value="${escapeHtml(val)}" placeholder="YYYY-MM-DD">`;
+    } else {
+      input = `<input type="text" data-qid="${q.id}" data-type="text" value="${escapeHtml(val)}" placeholder="Enter answer…">`;
+    }
+    return `<div class="edit-field">${label}${input}</div>`;
+  }).join('');
+
+  const orphanNote = orphanValues.length
+    ? `<div class="edit-orphan-note"><i class="fa-solid fa-triangle-exclamation"></i>
+         ${orphanValues.length} answer(s) belong to old/removed questions. They are preserved and can only be edited below.
+       </div>`
+    : '';
+
+  const orphanFields = orphanValues.map(c => {
+    const raw = r.answers[c.id];
+    const val = Array.isArray(raw) ? raw.join(', ') : String(raw ?? '');
+    return `<div class="edit-field">
+      <label style="color:#7A5A00"><i class="fa-solid fa-clock-rotate-left"></i> ${escapeHtml(c.title)} <span class="type-badge" style="background:#fff4bf;color:#7A5A00">old</span></label>
+      <input type="text" data-qid="${c.id}" data-type="text" value="${escapeHtml(val)}" placeholder="(empty)">
+    </div>`;
+  }).join('');
+
+  openModal(
+    'Edit Response',
+    `<div class="detail-meta" style="grid-template-columns:1fr 1fr;margin-bottom:18px">
+       <div><b>Submission ID</b><span>${escapeHtml(r.id)}</span></div>
+       <div><b>Submitted At</b><span>${escapeHtml(fmtDate(r.submittedAt))}</span></div>
+     </div>
+     <div class="edit-unsaved-note"><i class="fa-solid fa-circle-info"></i> All fields are editable. Changes are saved when you click <b>Save Changes</b>.</div>
+     ${orphanNote}
+     <div class="edit-grid" id="editGrid">
+       ${fieldsHTML}
+       ${orphanFields}
+     </div>`,
+    `<button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+     <button class="btn btn-primary" id="saveResponseBtn"><i class="fa-solid fa-floppy-disk"></i> Save Changes</button>`
+  );
+
+  $('#saveResponseBtn').addEventListener('click', async () => {
+    const updates = {};
+    const newAnswers = {};
+
+    // Collect updated values from all inputs
+    $('#editGrid').querySelectorAll('[data-qid]').forEach(el => {
+      const qid = el.dataset.qid;
+      const type = el.dataset.type;
+      if (type === 'checkbox'){
+        // Handled separately below via checkbox groups
+        return;
+      }
+      if (type === 'radio'){
+        // Handled separately below via radio groups
+        return;
+      }
+      newAnswers[qid] = el.value.trim();
+    });
+
+    // Handle checkbox groups
+    const checkboxGroups = new Map();
+    $('#editGrid').querySelectorAll('input[type=checkbox][data-qid]').forEach(cb => {
+      const qid = cb.dataset.qid;
+      if (!checkboxGroups.has(qid)) checkboxGroups.set(qid, []);
+      if (cb.checked) checkboxGroups.get(qid).push(cb.value);
+    });
+    checkboxGroups.forEach((vals, qid) => { newAnswers[qid] = vals; });
+
+    // Handle radio groups
+    const radioGroups = new Map();
+    $('#editGrid').querySelectorAll('input[type=radio][data-qid]').forEach(rd => {
+      const qid = rd.dataset.qid;
+      if (rd.checked) radioGroups.set(qid, rd.value);
+    });
+    radioGroups.forEach((val, qid) => { newAnswers[qid] = val; });
+
+    // Build updates only for changed values
+    const orig = r.answers || {};
+    for (const qid of Object.keys(newAnswers)){
+      const oldRaw = orig[qid];
+      const oldVal = Array.isArray(oldRaw) ? oldRaw.join('|||') : String(oldRaw ?? '');
+      const newRaw = newAnswers[qid];
+      const newVal = Array.isArray(newRaw) ? newRaw.join('|||') : String(newRaw);
+      if (oldVal !== newVal){
+        updates[`answers.${qid}`] = newRaw;
+      }
+    }
+
+    if (Object.keys(updates).length === 0){
+      toast('No changes to save');
+      closeModal();
+      return;
+    }
+
+    const btn = $('#saveResponseBtn');
+    const origHTML = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving…';
+
+    try {
+      const respRef = doc(db, 'forms', formId, 'responses', r.id);
+      await updateDoc(respRef, updates);
+      // Optimistic local update
+      if (!r.answers) r.answers = {};
+      Object.keys(newAnswers).forEach(qid => { r.answers[qid] = newAnswers[qid]; });
+      prepareResponse(r);
+      closeModal();
+      toast(`Response updated (${Object.keys(updates).length} field${Object.keys(updates).length > 1 ? 's' : ''})`);
+      applyFilters();
+    } catch (err) {
+      console.error(err);
+      toast('Failed to update: ' + err.message, 'error');
+      btn.disabled = false;
+      btn.innerHTML = origHTML;
+    }
+  });
+}
+window.openEditResponse = openEditResponse;
 
 /* ---------------- Selection ---------------- */
 function selectCell(cellEl, response, colIndex, qid, val){
@@ -1450,7 +1640,10 @@ function openResponseDetail(r){
       <div><b>Sync Status</b><span style="color:var(--success)"><i class="fa-solid fa-circle-check"></i> ${escapeHtml(r.syncStatus || 'synced')}</span></div>
     </div>
     ${rows}${orphanRows}`,
-    `<button class="btn btn-ghost" onclick="closeModal()">Close</button>`
+    `<button class="btn btn-ghost" onclick="closeModal()">Close</button>
+     <button class="btn btn-primary" onclick="closeModal();openEditResponse('${escapeHtml(r.id)}')">
+       <i class="fa-solid fa-pen"></i> Edit Response
+     </button>`
   );
 }
 
